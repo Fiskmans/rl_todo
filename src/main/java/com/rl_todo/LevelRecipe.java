@@ -1,9 +1,8 @@
-package com.todo;
+package com.rl_todo;
 
 import net.runelite.api.Skill;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class LevelRecipe extends Recipe

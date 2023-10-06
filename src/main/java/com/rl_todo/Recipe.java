@@ -1,11 +1,10 @@
-package com.todo;
+package com.rl_todo;
 
 import net.runelite.api.Skill;
 import net.runelite.client.plugins.skillcalculator.skills.SkillAction;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class Recipe
 {

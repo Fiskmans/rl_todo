@@ -1,13 +1,12 @@
-package com.todo.ui;
+package com.rl_todo.ui;
 
-import com.todo.Goal;
-import com.todo.TodoPlugin;
+import com.rl_todo.Goal;
+import com.rl_todo.TodoPlugin;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -86,7 +85,6 @@ public class GoalPopup extends JPopupMenu
                     myPlugin.myConfig.setRecipes(String.join("\n", filtered));
             }
         });
-
 
         myPlugin.myPanel.GetGoals().RemoveGoal(myGoal);
     }

@@ -1,7 +1,7 @@
-package com.todo.ui;
+package com.rl_todo.ui;
 
-import com.todo.Goal;
-import com.todo.TodoPlugin;
+import com.rl_todo.Goal;
+import com.rl_todo.TodoPlugin;
 import net.runelite.api.ItemComposition;
 import net.runelite.api.ItemID;
 
@@ -9,7 +9,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import net.runelite.client.game.chatbox.ChatboxItemSearch;
 
-import javax.inject.Inject;
 import javax.swing.*;
 
 

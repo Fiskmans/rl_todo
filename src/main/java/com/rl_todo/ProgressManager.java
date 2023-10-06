@@ -1,4 +1,4 @@
-package com.todo;
+package com.rl_todo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,6 +35,11 @@ public class ProgressManager
         myTrackers.get(aId).add(aTracker);
 
         return  GetProgress(aId);
+    }
+
+    public void RemoveTracker(ProgressTracker aTracker, String aId)
+    {
+        myTrackers.get(aId).remove(aTracker);
     }
 
     public void CountUpdated(String aId)

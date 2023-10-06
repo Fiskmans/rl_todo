@@ -1,6 +1,6 @@
-package com.todo.ui;
+package com.rl_todo.ui;
 
-import com.todo.GoalCollection;
+import com.rl_todo.GoalCollection;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

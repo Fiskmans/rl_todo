@@ -1,12 +1,9 @@
-package com.todo.ui;
+package com.rl_todo.ui;
 
-import com.todo.Goal;
-import com.todo.Recipe;
-import com.todo.RecipeManager;
-import com.todo.TodoPlugin;
+import com.rl_todo.Goal;
+import com.rl_todo.Recipe;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;

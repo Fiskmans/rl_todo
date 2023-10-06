@@ -1,4 +1,4 @@
-package com.todo;
+package com.rl_todo;
 
 import net.runelite.api.ItemID;
 import net.runelite.client.plugins.grounditems.GroundItemsConfig;

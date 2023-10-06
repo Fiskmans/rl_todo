@@ -1,10 +1,10 @@
-package com.todo;
+package com.rl_todo;
 
 import com.google.inject.Provides;
 import javax.inject.Inject;
 import javax.swing.*;
 
-import com.todo.ui.TodoPanel;
+import com.rl_todo.ui.TodoPanel;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.events.ItemContainerChanged;

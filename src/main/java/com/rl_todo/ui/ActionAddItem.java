@@ -1,7 +1,7 @@
-package com.todo.ui;
+package com.rl_todo.ui;
 
-import com.todo.ProgressManager;
-import com.todo.TodoPlugin;
+import com.rl_todo.ProgressManager;
+import com.rl_todo.TodoPlugin;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;

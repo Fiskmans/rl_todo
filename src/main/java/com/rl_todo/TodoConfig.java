@@ -1,4 +1,4 @@
-package com.todo;
+package com.rl_todo;
 
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
@@ -6,8 +6,6 @@ import net.runelite.client.config.ConfigItem;
 
 import java.awt.*;
 import java.util.List;
-import java.util.Arrays;
-import java.util.stream.Collectors;
 
 @ConfigGroup("Todo")
 public interface TodoConfig extends Config
@@ -79,6 +77,13 @@ public interface TodoConfig extends Config
 	{
 		return true;
 	}
+
+	@ConfigItem(
+			keyName = "messageOnCompletion",
+			name = "Message on Completion",
+			description = "Whether to send a message in the game chat whenever you fully complete a goal/subgoal"
+	)
+	default boolean messageOnCompletion() { return true; }
 
 	@ConfigItem(
 			keyName = "goals",

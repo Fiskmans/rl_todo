@@ -1,4 +1,4 @@
-package com.todo;
+package com.rl_todo;
 
 public interface ProgressTracker
 {

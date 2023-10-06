@@ -1,8 +1,7 @@
-package com.todo;
+package com.rl_todo;
 
-import com.sun.tools.javac.comp.Todo;
-import com.todo.ui.GoalPopup;
-import com.todo.ui.TodoPanel;
+import com.rl_todo.ui.GoalPopup;
+import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.Quest;
 import net.runelite.api.Skill;
@@ -10,7 +9,6 @@ import net.runelite.client.util.AsyncBufferedImage;
 import net.runelite.client.util.ImageUtil;
 
 import javax.swing.*;
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -70,6 +68,7 @@ public class Goal extends JComponent implements ProgressTracker
     private Recipe myRecipe = null;
     public boolean IsRoot() { return myParent == null; }
     public boolean HasRecipe() { return myRecipe != null; }
+    private boolean myIsDone = false;
 
     private List<Goal> myChildren = new ArrayList<>();
 
@@ -193,8 +192,6 @@ public class Goal extends JComponent implements ProgressTracker
             }
         }
 
-        myProgress = myPlugin.myProgressManager.AddTracker(this, myId);
-
         AutoSelectRecipe();
         RecalculateBanked();
     }
@@ -235,13 +232,17 @@ public class Goal extends JComponent implements ProgressTracker
         g.setColor(myPlugin.myConfig.bankedColor());
         g.fillRect(barStart + progressWidth,0,bankedWidth - progressWidth,getHeight());
 
-        DrawText(g, myPrettyId, barStart + 3, getHeight() - 2, false);
+        DrawText(g, myPrettyId, barStart + 3, getHeight() - 3, false);
 
 
         if (myTarget != 1)
         {
             String s = DisplayNum(myProgress) + "/" + DisplayNum(myTarget);
-            DrawText(g, s, getWidth(), getHeight() - 2, true);
+
+            if (myIsDone)
+                s = "Done";
+
+            DrawText(g, s, getWidth(), getHeight() - 3, true);
         }
 
         g.setColor(Color.DARK_GRAY);
@@ -311,6 +312,8 @@ public class Goal extends JComponent implements ProgressTracker
         {
             myOwner.AddSubGoal(this, child);
         }
+        myProgress = myPlugin.myProgressManager.AddTracker(this, myId);
+        repaint();
     }
 
     void onRemoved()
@@ -319,6 +322,7 @@ public class Goal extends JComponent implements ProgressTracker
         {
             myOwner.RemoveGoal(child);
         }
+        myPlugin.myProgressManager.RemoveTracker(this, myId);
     }
 
     void AddChild(Goal aGoal)
@@ -338,6 +342,16 @@ public class Goal extends JComponent implements ProgressTracker
             int clamped = Math.min(aCount, myTarget);
             if (clamped != myProgress)
             {
+                if(!myIsDone && clamped == myTarget)
+                {
+                    myIsDone = true;
+                    if (myPlugin.myConfig.messageOnCompletion())
+                    {
+                        myPlugin.myClient.addChatMessage(ChatMessageType.GAMEMESSAGE, "Todo", "You completed a goal!", "Todo");
+                    }
+                }
+
+
                 myProgress = clamped;
                 repaint();
                 TodoPlugin.debug("Progress on " + toString());

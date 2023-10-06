@@ -1,4 +1,4 @@
-package com.todo;
+package com.rl_todo;
 
 import net.runelite.client.RuneLite;
 import net.runelite.client.externalplugins.ExternalPluginManager;

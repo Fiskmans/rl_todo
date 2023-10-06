@@ -1,8 +1,8 @@
-package com.todo.ui;
+package com.rl_todo.ui;
 
-import com.todo.GoalCollection;
-import com.todo.ProgressManager;
-import com.todo.TodoPlugin;
+import com.rl_todo.GoalCollection;
+import com.rl_todo.ProgressManager;
+import com.rl_todo.TodoPlugin;
 import net.runelite.client.ui.PluginPanel;
 
 import javax.swing.*;
@@ -19,7 +19,7 @@ public class TodoPanel extends PluginPanel
     private final GoalCollection myGoals = new GoalCollection();
 
     private final JScrollPane myScrollPane = new JScrollPane(myGoals, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-    private final JLabel myVisitBankLabel = new JLabel("Please visit the bank");
+    private final JLabel myVisitBankLabel = new JLabel("Open the bank to start tracking");
     private final Component myStrut = Box.createVerticalStrut(1);
     private TodoPlugin myPlugin;
 

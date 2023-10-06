@@ -1,4 +1,4 @@
-package com.todo;
+package com.rl_todo;
 
 import net.runelite.api.Item;
 import net.runelite.api.Quest;
