@@ -17,7 +17,7 @@ public interface TodoConfig extends Config
 	)
 	default boolean debug()
 	{
-		return true;
+		return false;
 	}
 
 	@ConfigItem(

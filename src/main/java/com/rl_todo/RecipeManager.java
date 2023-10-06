@@ -2039,6 +2039,11 @@ public class RecipeManager
 
         for(SmithingAction action : SmithingAction.values())
         {
+            if (Arrays.asList(ignored).contains(action.name()))
+            {
+                continue;
+            }
+
             int del = action.name().indexOf("_");
             if (del == -1)
             {
