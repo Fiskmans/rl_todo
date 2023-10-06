@@ -10,3 +10,5 @@ A plugin to maintain an interactive todolist
   - xp goals
 - Supports recursive goals
 - Calculates 'banked' progress
+
+![example screenshot](/assets/example_screenshot.png)
