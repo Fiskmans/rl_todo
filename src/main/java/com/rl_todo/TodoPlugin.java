@@ -133,7 +133,7 @@ public class TodoPlugin extends Plugin
 		{
 			myQuest = new Quests(this);
 			myMethodManager = new MethodManager(this);
-			myQuest.Load();
+			myQuest.Load(); // this should be done on first game tick after logging in
 
 			SwingUtilities.invokeLater(()->
 			{
