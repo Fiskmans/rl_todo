@@ -5,92 +5,143 @@ import com.rl_todo.TodoPlugin;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class GoalPopup extends JPopupMenu
 {
     private TodoPlugin myPlugin;
     private Goal myGoal;
 
-    private JMenuItem mySetup;
-    private JMenuItem myUnset;
-    private JMenuItem myDelete;
-
     public GoalPopup(TodoPlugin aPlugin,Goal aGoal)
     {
         myPlugin = aPlugin;
         myGoal = aGoal;
 
-        mySetup = new JMenuItem(new AbstractAction("Setup") {
+        JMenuItem setAmount = new JMenuItem(new AbstractAction("Set amount") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SetAmount();
+            }
+        });
+
+        JMenuItem setupMethod = new JMenuItem(new AbstractAction("Select method") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Setup();
             }
         });
 
-        myUnset = new JMenuItem(new AbstractAction("Unset") {
+        JMenuItem setupMultipleMethod = new JMenuItem(new AbstractAction("Select multiple methods") {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                SetupMultiple();
+            }
+        });
+
+        JMenuItem unsetMethod = new JMenuItem(new AbstractAction("Unset method") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Unset();
             }
         });
 
-        myDelete  = new JMenuItem(new AbstractAction("Delete") {
+        JMenuItem deleteGoal  = new JMenuItem(new AbstractAction("Delete") {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Delete();
             }
         });
 
-        if (myGoal.GetRecipeCandidates().size() != 0)
-        {
-            add(mySetup);
-        }
-        else
-        {
-            add(new JLabel("No known ways to acquire"));
-        }
+        add(new JLabel(myGoal.GetPrettyId()));
 
-        if (myGoal.HasRecipe())
-            add(myUnset);
+        if (myPlugin.myConfig.debug() > 1)
+            add(new JLabel("Raw id: " + myGoal.GetId()));
+
+        String progress = myGoal.GetProgressText();
+        if (!progress.equals(""))
+            add(new JLabel(progress));
+
+        add(new JLabel("Method: " + myGoal.GetMethodName()));
+
+        add(new JSeparator());
+
+        if (myGoal.HasMethod())
+            add(unsetMethod);
+
+        switch(myGoal.GetMethodCandidates().size())
+        {
+            default:
+                add(setupMultipleMethod);
+            case 1:
+                add(setupMethod);
+                break;
+            case 0:
+                add(new JLabel("Select method: No known ways to acquire"));
+                break;
+        }
 
         if (myGoal.IsRoot())
-            add(myDelete);
+        {
+            if (myGoal.MaxTarget() > 1)
+            {
+                add(setAmount);
+            }
+
+            add(deleteGoal);
+        }
+    }
+
+    void SetAmount()
+    {
+        myPlugin.myChatboxTextInput
+            .prompt("Set amount")
+            .charValidator(null)
+            .value(Integer.toString(myGoal.GetTarget()))
+            .onDone((String aValue) ->
+                {
+                    try
+                    {
+                        int val = Integer.parseInt(aValue);
+                        int max = myGoal.MaxTarget();
+
+                        if (val > max)
+                        {
+                            TodoPlugin.IgnorableError(aValue + " is larger than the maximum allowed value of " + max);
+                            return;
+                        }
+
+                        myGoal.SetTarget(val, true);
+                    }
+                    catch (Exception e)
+                    {
+                        TodoPlugin.IgnorableError("Amount needs to be a number: " + aValue);
+                    }
+                })
+            .build();
     }
 
     void Setup()
     {
-        RecipeSelector menu = new RecipeSelector(myGoal);
-        menu.show(myGoal, 0,myGoal.getHeight());
+        TodoPlugin.debug("Switched to method selector for " + myGoal, 3);
+        myPlugin.myPanel.SetContent(new MethodSelector(myPlugin, myGoal));
+    }
+
+    void SetupMultiple()
+    {
+        TodoPlugin.debug("Switched to multiple method selector for " + myGoal, 3);
+        myPlugin.myPanel.SetContent(new MethodMultiSelector(myPlugin, myGoal));
     }
 
     void Delete()
     {
         myPlugin.myClientThread.invokeLater(() ->
         {
-            {
-                List<String> rows = new ArrayList<>(Arrays.asList(myPlugin.myConfig.getGoals().split("\n")));
-                if (rows.remove(myGoal.GetId()))
-                    myPlugin.myConfig.setGoals(String.join("\n", rows));
-            }
-
-            {
-                List<String> rows = new ArrayList<>(Arrays.asList(myPlugin.myConfig.getRecipes().split("\n")));
-                List<String> filtered = rows.stream().filter((String row) -> !row.startsWith(myGoal.GetId())).collect(Collectors.toList());
-
-                if (rows.size() != filtered.size())
-                    myPlugin.myConfig.setRecipes(String.join("\n", filtered));
-            }
+            myPlugin.myPanel.GetGoals().RemoveGoal(myGoal);
+            myPlugin.myPanel.GetGoals().SaveConfig();
         });
-
-        myPlugin.myPanel.GetGoals().RemoveGoal(myGoal);
     }
 
     void Unset()
     {
-        myGoal.SetRecipe(null, true);
+        myGoal.UnsetMethods(true);
     }
 }

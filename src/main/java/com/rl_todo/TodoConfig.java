@@ -3,6 +3,7 @@ package com.rl_todo;
 import net.runelite.client.config.Config;
 import net.runelite.client.config.ConfigGroup;
 import net.runelite.client.config.ConfigItem;
+import net.runelite.client.config.ConfigSection;
 
 import java.awt.*;
 import java.util.List;
@@ -10,20 +11,30 @@ import java.util.List;
 @ConfigGroup("Todo")
 public interface TodoConfig extends Config
 {
+	@ConfigSection(
+			name = "Colors",
+			description = "Colors and accessibility",
+			position = 0
+	)
+	String colorSection = "colorSection";
+
+
 	@ConfigItem(
 		keyName = "debug_logs",
-		name = "Debug",
-		description = "Whether to enable debugging to console"
+		name = "Debug level",
+		description = "What deb"
 	)
-	default boolean debug()
+	default int debug()
 	{
-		return false;
+		return 0;
 	}
+
 
 	@ConfigItem(
 			keyName = "color_completed",
 			name = "Completed color",
-			description = "The progressbar color when completed"
+			description = "The progress color when completed",
+			section = colorSection
 	)
 	default Color completedColor()
 	{
@@ -33,7 +44,8 @@ public interface TodoConfig extends Config
 	@ConfigItem(
 			keyName = "color_banked",
 			name = "Banked color",
-			description = "The progressbar color when banked"
+			description = "The progress color when banked",
+			section = colorSection
 	)
 	default Color bankedColor()
 	{
@@ -43,40 +55,58 @@ public interface TodoConfig extends Config
 	@ConfigItem(
 			keyName = "color_text_outline",
 			name = "Text outline color",
-			description = "The color of the outline/background of text"
+			description = "The outline color of text",
+			section = colorSection
 	)
 	default Color textOutlineColor() { return new Color(5,5,5); }
 
 	@ConfigItem(
 			keyName = "color_text",
 			name = "Text color",
-			description = "The color of text"
+			description = "The color of text",
+			section = colorSection
 	)
 	default Color textColor() { return new Color(230,230,230); }
 
 	@ConfigItem(
+			keyName = "progress_source_synced",
+			name = "Progress source synced",
+			description = "The color of the blip on progress sources when they are syncronized and working",
+			section = colorSection
+	)
+	default Color blipColorSynced() { return Color.green; }
+
+	@ConfigItem(
+			keyName = "progress_source_not_synced",
+			name = "Progress source not synced",
+			description = "The color of the blip on progress sources when they are not syncronized and working",
+			section = colorSection
+	)
+	default Color blipColorNotSynced() { return Color.red; }
+
+	@ConfigItem(
+			keyName = "tree_color",
+			name = "Tree color",
+			description = "The color of the task tree, icon outlines and branches",
+			section = colorSection
+	)
+	default Color treeColor() { return new Color(80,80,80); }
+
+	@ConfigItem(
 			keyName = "row_size",
 			name = "Row height",
-			description = "How high every goal should be displayed, also affects icon size"
+			description = "How high every goal should be displayed, also affects icon size",
+			section = colorSection
 	)
 	default int rowHeight() { return 18; }
 
 	@ConfigItem(
 			keyName = "indent",
 			name = "Indent",
-			description = "How indented subtasks should be"
+			description = "How indented subtasks should be",
+			section = colorSection
 	)
 	default int indent() { return 12; }
-
-	@ConfigItem(
-			keyName = "defaultRecipes",
-			name = "Use default recipes",
-			description = "Whether to include the default recipes.\nThis, among other things, makes quests and diaries automatically expand"
-	)
-	default boolean includeDefaultRecipes()
-	{
-		return true;
-	}
 
 	@ConfigItem(
 			keyName = "messageOnCompletion",
@@ -88,7 +118,7 @@ public interface TodoConfig extends Config
 	@ConfigItem(
 			keyName = "goals",
 			name = "Goals",
-			description = "Current goals"
+			description = "Current goals\nFormat:\nid|target|method"
 	)
 	default String getGoals() { return ""; }
 
@@ -99,45 +129,4 @@ public interface TodoConfig extends Config
 	)
 	void setGoals(String aString);
 
-	@ConfigItem(
-			keyName = "recipes",
-			name = "Recipes",
-			description = "What recipes to use"
-	)
-	default String getRecipes() { return ""; }
-
-	@ConfigItem(
-			keyName = "recipes",
-			name = "",
-			description = ""
-	)
-	void setRecipes(String aString);
-
-
-	static void SmartInsert(List<String> aItems, String aItem)
-	{
-		int best = 0;
-		int bestScore = 0;
-
-		for(int i = 0; i < aItems.size(); i++)
-		{
-			int same = 0;
-			for(;same < aItems.get(i).length() && same < aItem.length(); same++)
-			{
-				if (aItem.charAt(same) != aItems.get(i).charAt(same))
-					break;
-			}
-
-			if (same <= bestScore)
-				continue;
-
-			best = i;
-			bestScore = same;
-		}
-
-		if (best < aItems.size())
-			best++;
-
-		aItems.add(best, aItem);
-	}
 }

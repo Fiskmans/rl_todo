@@ -7,88 +7,123 @@ import net.runelite.client.ui.PluginPanel;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.tree.*;
 import java.awt.*;
+import java.util.Objects;
 
 public class TodoPanel extends PluginPanel
 {
-    private final DefaultMutableTreeNode myGoalsRoot = new DefaultMutableTreeNode("Root");
     private final JLabel myTodoHeader = new JLabel("Todo");
-    private final JButton myAddGoal = new JButton("Add Goal");
-    private final JButton myRecalculate = new JButton("Recalculate");
-    private final GoalCollection myGoals = new GoalCollection();
+    private  final JButton myBackButton = new JButton("Back");
 
-    private final JScrollPane myScrollPane = new JScrollPane(myGoals, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-    private final JLabel myVisitBankLabel = new JLabel("Open the bank to start tracking");
-    private final Component myStrut = Box.createVerticalStrut(1);
+    private Component myContent;
+    private Component myStashedContent;
+    private GoalPanel myDefaultContent;
     private TodoPlugin myPlugin;
 
     public GoalCollection GetGoals()
     {
-        return myGoals;
+        return myDefaultContent.myGoals;
     }
 
-    public TodoPanel(TodoPlugin aPlugin, ProgressManager aProgressManager)
+    public TodoPanel(TodoPlugin aPlugin)
     {
-        super();
+        super(false);
 
         myPlugin = aPlugin;
-        myGoals.setPlugin(aPlugin);
+        myDefaultContent = new GoalPanel(myPlugin);
+        myStashedContent = myDefaultContent;
 
         setBorder(new EmptyBorder(3, 4, 3, 3));
         setLayout(new GridBagLayout());
-        setPreferredSize(new Dimension(240, 1000));
-
-        myAddGoal.addActionListener(new ActionAddGoal(aPlugin));
-        myRecalculate.addActionListener(new ActionRecalculateGoals(myGoals));
 
         final GridBagConstraints constraint = new GridBagConstraints();
         constraint.fill = GridBagConstraints.HORIZONTAL;
         constraint.weightx = 1;
-        constraint.gridwidth = 2;
         constraint.gridx = 0;
         constraint.gridy = 0;
 
         add(myTodoHeader, constraint);
 
-        constraint.gridy++;
-        add(Box.createVerticalStrut(1), constraint);
+        myBackButton.addActionListener(e -> ResetContent());
+        myBackButton.setVisible(false);
 
-        constraint.gridy++;
-        constraint.gridwidth = 1;
-        add(myAddGoal, constraint);
+        constraint.gridy = 1;
+        add(myBackButton, constraint);
 
-        constraint.gridx++;
-        add(myRecalculate, constraint);
+        constraint.gridy = 1;
+        add(new JSeparator(), constraint);
 
-        constraint.gridwidth = 2;
-        constraint.gridx = 0;
-        constraint.gridy++;
-        add(Box.createVerticalStrut(2), constraint);
-
-        constraint.gridy++;
-        add(myVisitBankLabel, constraint);
-
-        constraint.gridy++;
-        constraint.weighty = 1;
-        add(myStrut, constraint);
+        Priv_SetContent(new OfflinePanel());
     }
 
-    public void Enable()
+    private void Priv_SetContent(Component aComponent)
     {
+        if (!Objects.isNull(myContent))
+            remove(myContent);
+
         final GridBagConstraints constraint = new GridBagConstraints();
+        constraint.fill = GridBagConstraints.BOTH;
         constraint.weightx = 1;
         constraint.weighty = 1;
-        constraint.gridwidth = 2;
-        constraint.gridy = 4;
+        constraint.gridx = 0;
+        constraint.gridy = 3;
 
-        constraint.fill = GridBagConstraints.BOTH;
-        add(myScrollPane, constraint);
+        myContent = aComponent;
 
-        remove(myStrut);
-        remove(myVisitBankLabel);
+        add(myContent, constraint);
 
         revalidate();
         repaint();
+    }
+
+    public void SetContent(JPanel aPanel)
+    {
+        myBackButton.setVisible(true);
+        Priv_SetContent(aPanel);
+    }
+
+    public void ResetContent()
+    {
+        TodoPlugin.debug("Returned to main panel", 3);
+        myBackButton.setVisible(false);
+        Priv_SetContent(myDefaultContent);
+    }
+
+    public void OnLoggedIn()
+    {
+        TodoPlugin.debug("Logged in", 3);
+
+        assert !Objects.isNull(myStashedContent);
+
+        myBackButton.setVisible(myStashedContent != myDefaultContent);
+        Priv_SetContent(myStashedContent);
+
+        myStashedContent = null;
+    }
+
+    public void OnLoggedOut()
+    {
+        TodoPlugin.debug("Logged out", 3);
+
+        if (!Objects.isNull(myStashedContent))
+            return;
+
+        TodoPlugin.debug("Applied 'offline' panel", 3);
+
+        myStashedContent = myContent;
+        SwingUtilities.invokeLater(() ->
+        {
+            Priv_SetContent(new OfflinePanel());
+        });
+    }
+
+    public void Disable(String aReason)
+    {
+        //TODO Disable plugin
+    }
+
+    public void SaveConfig()
+    {
+        myDefaultContent.myGoals.SaveConfig();
     }
 }

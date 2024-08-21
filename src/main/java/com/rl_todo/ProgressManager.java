@@ -9,6 +9,7 @@ public class ProgressManager
 {
     private Map<String, List<ProgressTracker>> myTrackers = new HashMap<>();
     private List<ProgressSource> mySources = new ArrayList<>();
+    private List<String> myUpdatedIds = new ArrayList<>();
 
     public void AddSource(ProgressSource aSource)
     {
@@ -44,12 +45,21 @@ public class ProgressManager
 
     public void CountUpdated(String aId)
     {
-        if (!myTrackers.containsKey(aId))
-            return;
+        myUpdatedIds.add(aId);
+    }
 
-        int count = GetProgress(aId);
+    public void Tick()
+    {
+        for (String id : myUpdatedIds)
+        {
+            TodoPlugin.debug("Changed: " + id, 3);
 
-        for (ProgressTracker tracker : myTrackers.get(aId))
-            tracker.CountUpdated(aId, count);
+            if (myTrackers.containsKey(id))
+                for (ProgressTracker tracker : myTrackers.get(id))
+                    tracker.CountUpdated(id);
+
+        }
+
+        myUpdatedIds.clear();
     }
 }

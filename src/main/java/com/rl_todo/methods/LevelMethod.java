@@ -1,11 +1,14 @@
-package com.rl_todo;
+package com.rl_todo.methods;
 
+import com.rl_todo.IdBuilder;
+import com.rl_todo.Resource;
+import com.rl_todo.TodoPlugin;
 import net.runelite.api.Skill;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class LevelRecipe extends Recipe
+public class LevelMethod extends Method
 {
     static final int[] XP_LOOKUP = new int[]
             {
@@ -25,11 +28,12 @@ public class LevelRecipe extends Recipe
     String myXpTag;
     String myLevelTag;
 
-    public LevelRecipe(Skill aSkill)
+    public LevelMethod(Skill aSkill)
     {
-        super(("Level up " + aSkill.getName()), new ArrayList<>(), new ArrayList<>(),new ArrayList<>());
+        super(("Level up " + aSkill.getName()), "level");
 
-        myProducts.add(new Resource(IdBuilder.levelId(aSkill), 1));
+        myMakes.add(new Resource(IdBuilder.levelId(aSkill), 1));
+        myTakes.add(new Resource(IdBuilder.xpId(aSkill), 1));
 
         mySkill = aSkill;
         myLevelTag = IdBuilder.levelId(aSkill);
@@ -44,7 +48,7 @@ public class LevelRecipe extends Recipe
         assert aTarget <= 99;
 
         List<Resource> out = new ArrayList<>();
-        out.add(new Resource(myXpTag, XP_LOOKUP[aTarget] * 100));
+        out.add(new Resource(myXpTag, XP_LOOKUP[aTarget]));
 
         return out;
     }
@@ -56,7 +60,7 @@ public class LevelRecipe extends Recipe
         int baseLevel = 0;
         for(; baseLevel < 99; baseLevel++)
         {
-            if (baseXp / 100 < XP_LOOKUP[baseLevel])
+            if (baseXp < XP_LOOKUP[baseLevel])
                 break;
 
         }
@@ -71,7 +75,7 @@ public class LevelRecipe extends Recipe
         int bankedLevel = baseLevel;
         for(; bankedLevel < 99; bankedLevel++)
         {
-            if (bankedXp / 100 < XP_LOOKUP[bankedLevel])
+            if (bankedXp < XP_LOOKUP[bankedLevel])
                 break;
 
         }

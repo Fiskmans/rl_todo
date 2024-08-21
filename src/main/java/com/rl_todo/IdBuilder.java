@@ -11,28 +11,14 @@ public class IdBuilder
         if (aId.isEmpty())
             return false;
 
-        int dotIndex = aId.indexOf('.');
-        if (dotIndex == -1)
-        {
-            try
-            {
-                Integer.parseInt(aId);
-                return true;
-            }
-            catch (NumberFormatException e)
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return aId.indexOf('.') != -1;
     }
 
-    public static Resource xpResource(Skill aSkill, int aAmount)
+    public static Resource xpResource(Skill aSkill, double aAmount)
     {
         return new Resource(
           xpId(aSkill),
-          aAmount);
+                (float)aAmount);
     }
 
     public static Resource levelResource(Skill aSkill, int aAmount)
@@ -42,16 +28,28 @@ public class IdBuilder
                 aAmount);
     }
 
-    public static Resource itemResource(Item aItem, int aAmount)
+    public static Resource itemResource(Item aItem, double aAmount)
     {
         return new Resource(
                 itemId(aItem),
-                aAmount);
+                (float)aAmount);
     }
-    public static Resource itemResource(int aItem, int aAmount)
+    public static Resource itemResource(int aItem, double aAmount)
     {
         return new Resource(
                 itemId(aItem),
+                (float)aAmount);
+    }
+
+    public static String alternativeId(Alternative aAlternative)
+    {
+        return "any." + aAlternative.getId();
+    }
+
+    public static Resource alternativeResource(Alternative aAlternative, int aAmount)
+    {
+        return new Resource(
+                alternativeId(aAlternative),
                 aAmount);
     }
 
@@ -82,13 +80,14 @@ public class IdBuilder
 
     public static String itemId(Item aItem)
     {
-        return Integer.toString(aItem.getId());
+        return itemId(aItem.getId());
     }
 
     public static String itemId(int aItem)
     {
-        return Integer.toString(aItem);
+        return "item." + aItem;
     }
+
     public static String questId(Quest aQuest)
     {
         return "quest." + aQuest.getId();

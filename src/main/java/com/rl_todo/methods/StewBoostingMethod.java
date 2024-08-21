@@ -1,19 +1,28 @@
-package com.rl_todo;
+package com.rl_todo.methods;
 
+import com.rl_todo.IdBuilder;
+import com.rl_todo.Resource;
+import com.rl_todo.TodoPlugin;
 import net.runelite.api.ItemID;
 import net.runelite.api.Quest;
 import net.runelite.api.Skill;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class StewBoostingRecipe extends Recipe
+public class StewBoostingMethod extends Method
 {
     Skill mySkill;
-    public StewBoostingRecipe(Skill aSkill)
+    public StewBoostingMethod(Skill aSkill)
     {
-        super("Stew boost " + aSkill.getName(), Arrays.asList(IdBuilder.levelResource(aSkill, 1)), new ArrayList<Resource>(), new ArrayList<Resource>());
+        super("Stew boost " + aSkill.getName(), "boost/stew");
+
+        myMakes.add(IdBuilder.levelResource(aSkill, 1));
+
+        myTakes.add(IdBuilder.itemResource(ItemID.SPICY_STEW, 1));
+
+        myRequires.add(IdBuilder.levelResource(aSkill, 1));
+        myRequires.add(IdBuilder.questResource(Quest.RECIPE_FOR_DISASTER__EVIL_DAVE));
 
         mySkill = aSkill;
     }

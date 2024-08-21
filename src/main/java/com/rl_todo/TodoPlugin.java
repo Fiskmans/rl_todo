@@ -4,17 +4,19 @@ import com.google.inject.Provides;
 import javax.inject.Inject;
 import javax.swing.*;
 
+import com.rl_todo.methods.MethodManager;
 import com.rl_todo.ui.TodoPanel;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
-import net.runelite.api.events.ItemContainerChanged;
-import net.runelite.api.events.StatChanged;
+import net.runelite.api.events.*;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.game.ItemManager;
+import net.runelite.client.game.SpriteManager;
 import net.runelite.client.game.chatbox.ChatboxItemSearch;
+import net.runelite.client.game.chatbox.ChatboxTextInput;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
@@ -50,18 +52,19 @@ public class TodoPlugin extends Plugin
 
 	@Inject
 	public ProgressSources mySources;
-	boolean myInventoryLoaded = false;
-	boolean myBankLoaded = false;
 
 	@Inject
 	public ItemManager myItemManager;
 
 	@Inject
+	public SpriteManager mySpriteManager;
+
+	@Inject
 	public ChatboxItemSearch myChatboxItemSearch;
+	@Inject
+	public ChatboxTextInput myChatboxTextInput;
 
-	boolean myIsEnabled = false;
-
-	public RecipeManager myRecipeManager;
+	public MethodManager myMethodManager;
 	public TodoPanel myPanel;
 	public Quests myQuest;
 
@@ -70,21 +73,47 @@ public class TodoPlugin extends Plugin
 	private static final String LOG_TAG = "[todo] ";
 	private NavigationButton myNavButton;
 	static TodoPlugin myGlobalInstance = null;
+	private boolean myIsLoaded = false;
 
-	public static void debug(Object aMessage)
+	public static void debug(Object aMessage, int aLevel)
 	{
-		if (myGlobalInstance != null && myGlobalInstance.myConfig.debug())
+		if (myGlobalInstance != null && aLevel < myGlobalInstance.myConfig.debug())
+		{
+			myGlobalInstance.myClientThread.invokeLater(() ->
+			{
+				myGlobalInstance.myClient.addChatMessage(ChatMessageType.CONSOLE, LOG_TAG, aMessage.toString(), "Todo");
+			});
 			log.info(LOG_TAG + aMessage.toString());
+		}
+	}
+
+
+	public static void IgnorableError(Object aMessage)
+	{
+		myGlobalInstance.myClientThread.invokeLater(() ->
+		{
+			myGlobalInstance.myClient.addChatMessage(ChatMessageType.CONSOLE, LOG_TAG, aMessage.toString(), "Todo");
+		});
+		log.info(LOG_TAG + aMessage.toString());
+	}
+
+	public static void FixableError(Object aMessage, Object aFixLabel, Runnable aFix)
+	{
+		log.info(LOG_TAG + aMessage.toString());
+
+		// TODO add 'fix the error for me' button
 	}
 
 	@Override
 	protected void startUp() throws Exception
 	{
-		debug("startUp");
+		debug("startUp", 1);
 
 		myGlobalInstance = this;
 
-		myPanel = new TodoPanel(this, myProgressManager);
+
+
+		myPanel = new TodoPanel(this);
 		myNavButton = NavigationButton.builder()
 				.tooltip("Todo")
 				.priority(9)
@@ -103,7 +132,7 @@ public class TodoPlugin extends Plugin
 		myClientThread.invokeLater(()->
 		{
 			myQuest = new Quests(this);
-			myRecipeManager = new RecipeManager(this);
+			myMethodManager = new MethodManager(this);
 			myQuest.Load();
 
 			SwingUtilities.invokeLater(()->
@@ -116,16 +145,45 @@ public class TodoPlugin extends Plugin
 	@Override
 	protected void shutDown() throws Exception
 	{
-		debug("shutDown");
+		debug("shutDown", 1);
 
 		myProgressManager.RemoveAllSources();
 
-		myClientToolbar.removeNavigation(myNavButton);
+		SwingUtilities.invokeLater(()->
+		{
+			myClientToolbar.removeNavigation(myNavButton);
+		});
 
 		myQuest = null;
 		myNavButton = null;
 		myPanel = null;
-		myRecipeManager = null;
+		myMethodManager = null;
+	}
+
+	@Subscribe
+	public void onGameStateChanged(GameStateChanged event)
+	{
+		try
+		{
+			switch(event.getGameState())
+			{
+				case HOPPING:
+				case LOADING:
+				case CONNECTION_LOST:
+					break;
+				case LOGGED_IN:
+					OnLogin();
+					break;
+				default:
+					myPanel.OnLoggedOut();
+					myIsLoaded = false;
+					break;
+			}
+		}
+		catch(Exception e)
+		{
+			IgnorableError(LOG_TAG + " Crashed when changing gamestate");
+		}
 	}
 
 	@Subscribe
@@ -134,19 +192,31 @@ public class TodoPlugin extends Plugin
 		if (ev.getContainerId() == InventoryID.INVENTORY.getId())
 		{
 			UpdateContainerBasedSource(ev.getItemContainer(), mySources.Inventory);
-			myInventoryLoaded = true;
-			CheckEnableconditions();
 		}
 		else if(ev.getContainerId() == InventoryID.BANK.getId())
 		{
 			UpdateContainerBasedSource(ev.getItemContainer(), mySources.Bank);
-			myBankLoaded = true;
-			CheckEnableconditions();
 		}
 		else if(ev.getContainerId() == InventoryID.SEED_VAULT.getId())
 		{
 			UpdateContainerBasedSource(ev.getItemContainer(), mySources.SeedVault);
 		}
+	}
+
+	@Subscribe
+	public void onVarbitChanged(VarbitChanged ev)
+	{
+		switch (ev.getVarpId())
+		{
+			case 1059:
+			case 1060:
+				mySources.RefreshNMZ(this);
+				break;
+		}
+		debug("varbit changed: ", 5);
+		debug("  varpid: " + ev.getVarpId(), 5);
+		debug("  varbitid: " + ev.getVarbitId(), 5);
+		debug("  value: " + ev.getValue(), 5);
 	}
 
 	private void UpdateContainerBasedSource(ItemContainer aContainer, ProgressSource aSource)
@@ -156,8 +226,10 @@ public class TodoPlugin extends Plugin
 		Set<String> previousKeys = aSource.GetAllKeys();
 		for(String key : previousKeys)
 		{
-			Integer i = Integer.parseInt(key);
-			items.put(i,0);
+			assert key.startsWith("item.");
+
+			Integer i = Integer.parseInt(key.substring(5));
+			items.put(i, 0);
 		}
 
 		for(Item item : aContainer.getItems())
@@ -169,7 +241,7 @@ public class TodoPlugin extends Plugin
 		}
 
 		for (Map.Entry<Integer,Integer> entry : items.entrySet())
-			aSource.SetProgress(Integer.toString(entry.getKey()), entry.getValue());
+			aSource.SetProgress(IdBuilder.itemId(entry.getKey()), entry.getValue());
 	}
 
 	@Subscribe
@@ -178,15 +250,29 @@ public class TodoPlugin extends Plugin
 		if (!event.getGroup().equals(CONFIG_GROUP))
 			return;
 
-		if (myRecipeManager != null)
-			myRecipeManager.LoadConfig();
+		SwingUtilities.invokeLater(()->
+		{
+			myPanel.GetGoals().OnConfigChanged();
+		});
 	}
 
 	@Subscribe
-	protected void onStatChanged(StatChanged event) {
-
+	protected void onStatChanged(StatChanged event)
+	{
 		mySources.Levels.SetProgress(IdBuilder.levelId(event.getSkill()), event.getLevel());
-		mySources.Xp.SetProgress(IdBuilder.xpId(event.getSkill()), event.getXp() * 100);
+		mySources.Xp.SetProgress(IdBuilder.xpId(event.getSkill()), event.getXp());
+	}
+
+	@Subscribe
+	public void onAccountHashChanged(AccountHashChanged event)
+	{
+		myPanel.Disable("Does not support switching accounts without restarting the plugin");
+	}
+
+	@Subscribe
+	public void onGameTick(GameTick event)
+	{
+		myProgressManager.Tick();
 	}
 
 	@Provides
@@ -195,26 +281,18 @@ public class TodoPlugin extends Plugin
 		return configManager.getConfig(TodoConfig.class);
 	}
 
-	private void CheckEnableconditions()
+	private void OnLogin()
 	{
-		debug("checked enable");
+		if (myIsLoaded)
+			return;
 
-		if (myIsEnabled) return;
-		if (!myInventoryLoaded) return;
-		if (!myBankLoaded) return;
+		myIsLoaded = true;
 
-		debug("enabled");
-		myIsEnabled = true;
-
-		myRecipeManager.LoadConfig();
-		myPanel.Enable();
 		myQuest.Load();
+		myPanel.OnLoggedIn();
+		mySources.RefreshNMZ(this);
+		mySources.RefreshLevels(this);
 
-		for (Skill skill : Skill.values())
-		{
-			mySources.Levels.SetProgress(IdBuilder.levelId(skill), myClient.getRealSkillLevel(skill));
-			mySources.Xp.SetProgress(IdBuilder.xpId(skill), myClient.getSkillExperience(skill) * 100);
-		}
 
 		SwingUtilities.invokeLater(()->
 		{

@@ -1,13 +1,14 @@
 package com.rl_todo;
 
-import net.runelite.api.ItemID;
-import net.runelite.client.plugins.grounditems.GroundItemsConfig;
+import com.rl_todo.methods.Method;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class GoalCollection extends JPanel
 {
@@ -17,9 +18,10 @@ public class GoalCollection extends JPanel
     private GridBagLayout myLayout = new GridBagLayout();
 
 
-    public GoalCollection()
+    public GoalCollection(TodoPlugin aPlugin)
     {
         super();
+        myPlugin = aPlugin;
         super.setBackground(new Color(30,30,30));
         super.setLayout(myLayout);
         super.setBorder(new EmptyBorder(2,3,3,3));
@@ -34,43 +36,13 @@ public class GoalCollection extends JPanel
 
         myGoals.clear();
 
-        String[] goals = myPlugin.myConfig.getGoals().split("\n");
+        String[] lines = myPlugin.myConfig.getGoals().split("\n");
 
-        for(String goal : goals)
+        int at = 0;
+        while(at < lines.length)
         {
-            String id = "";
-            String rawAmount = "";
-
-            int index = goal.indexOf(':');
-            if (index != -1)
-            {
-                id = goal.substring(0, index).trim();
-                rawAmount = goal.substring(index + 1).trim();
-            }
-            else
-            {
-                id = goal.trim();
-                rawAmount = "1";
-            }
-
-            if (!IdBuilder.isValid(id))
-                continue;
-
-            int amount = 1;
-            try
-            {
-                amount = Integer.parseInt(rawAmount);
-            }
-            catch (NumberFormatException e) { }
-
-            AddGoal(new Goal(myPlugin, id, amount));
+            at = new Goal(null, myPlugin, Arrays.asList(lines), at).mySkipTo;
         }
-
-    }
-
-    public void setPlugin(TodoPlugin aPlugin)
-    {
-        myPlugin = aPlugin;
     }
 
     public void AddGoal(Goal aGoal)
@@ -78,6 +50,7 @@ public class GoalCollection extends JPanel
         int index = myGoals.size();
         myGoals.add(aGoal);
         aGoal.SetOwner(this);
+        myPlugin.myProgressManager.AddTracker(aGoal, aGoal.GetId());
 
         final GridBagConstraints constraint = new GridBagConstraints();
         constraint.fill = GridBagConstraints.HORIZONTAL;
@@ -89,7 +62,6 @@ public class GoalCollection extends JPanel
         //myPlugin.debug("Added goal [" + aGoal.toString() + "] in slot " + index);
 
         ReAnchor();
-        aGoal.onAdded();
     }
 
     public void AddSubGoal(Goal aParent, Goal aGoal)
@@ -97,6 +69,7 @@ public class GoalCollection extends JPanel
         int index = myGoals.indexOf(aParent) + 1;
         myGoals.add(index, aGoal);
         aGoal.SetOwner(this);
+        myPlugin.myProgressManager.AddTracker(aGoal, aGoal.GetId());
 
         final GridBagConstraints constraint = new GridBagConstraints();
         constraint.fill = GridBagConstraints.HORIZONTAL;
@@ -105,19 +78,34 @@ public class GoalCollection extends JPanel
         constraint.anchor = GridBagConstraints.NORTH;
 
         add(aGoal, constraint);
-        //myPlugin.debug("Added subgoal [" + aGoal.toString() + "] in slot " + index);
 
         ReLayout(index + 1);
-        aGoal.onAdded();
     }
 
     public void RemoveGoal(Goal aGoal)
     {
         remove(aGoal);
+        myPlugin.myProgressManager.RemoveTracker(aGoal, aGoal.GetId());
+        aGoal.OnRemoved();
+
         int index = myGoals.indexOf(aGoal);
+        if (index == -1)
+        {
+            TodoPlugin.debug("Removing a goal that does not exist", 0);
+            return;
+        }
+
         myGoals.remove(index);
         ReLayout(index);
-        aGoal.onRemoved();
+    }
+
+    public void RepaintRoots()
+    {
+        for (Goal goal : myGoals)
+        {
+            if (goal.IsRoot())
+                goal.repaint();
+        }
     }
 
     private void ReLayout(int aFrom)
@@ -147,5 +135,42 @@ public class GoalCollection extends JPanel
 
         revalidate();
         repaint();
+    }
+
+    public void OnConfigChanged()
+    {
+        // TODO make this work
+
+        // current issue:
+        // Creating a goal -> user actions -> saves to config -> causes config reload -> reloads goal while it's being added
+
+        //SwingUtilities.invokeLater(()->
+        //{
+        //    for (Goal goal : myGoals) {
+        //        remove(goal);
+        //        myPlugin.myProgressManager.RemoveTracker(goal, goal.GetId());
+        //        goal.OnRemoved();
+        //    }
+        //
+        //    myGoals.clear();;
+        //    Load();
+        //});
+    }
+
+    public void SaveConfig()
+    {
+        List<String> lines = new ArrayList<>();
+
+        for (Goal goal : myGoals)
+        {
+            if (!goal.IsRoot())
+            {
+                continue;
+            }
+
+            goal.Serialize(lines, 0);
+        }
+
+        TodoPlugin.myGlobalInstance.myConfig.setGoals(String.join("\n", lines));
     }
 }

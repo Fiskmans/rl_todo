@@ -1,13 +1,64 @@
 package com.rl_todo;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.Future;
 
 public class ProgressSource
 {
+    public enum Status
+    {
+        NOT_SYNCED,
+        SYNCED
+    }
+
+    private Status myStatus = Status.NOT_SYNCED;
     private Map<String, Integer> myProgress = new HashMap<>();
     private ProgressManager myManager;
+    private String myName;
+    private List<ProgressSourceStatusTracker> myStatusSubscribers = new ArrayList<>();
+    private Runnable myRefreshAction = null;
+
+    public ProgressSource(String aName)
+    {
+        myName = aName;
+    }
+
+    public void SetRefresh(Runnable aRunnable)
+    {
+        myRefreshAction = aRunnable;
+    }
+
+    public void Refresh()
+    {
+        if (Objects.isNull(myRefreshAction))
+            return;
+
+        myRefreshAction.run();
+    }
+
+    public String GetName()
+    {
+        return myName;
+    }
+
+    private void SetStatus(Status aStatus)
+    {
+        if (aStatus.equals(myStatus))
+            return;
+
+        myStatus = aStatus;
+
+        for (ProgressSourceStatusTracker tracker : myStatusSubscribers) {
+            tracker.OnStatusChanged(myStatus);
+        }
+    }
+
+    public void OnStatusChanged(ProgressSourceStatusTracker aTracker)
+    {
+        myStatusSubscribers.add(aTracker);
+
+        aTracker.OnStatusChanged(myStatus);
+    }
 
     public void SetManager(ProgressManager aManager)
     {
@@ -34,6 +85,8 @@ public class ProgressSource
 
     public void SetProgress(String aId, int aCount)
     {
+        SetStatus(Status.SYNCED);
+
         int c = GetProgress(aId);
         if (c == aCount)
             return;
@@ -48,6 +101,6 @@ public class ProgressSource
         }
         myManager.CountUpdated(aId);
 
-        TodoPlugin.debug("Source now has " + aCount + " of " + aId + " (was " + c + ")");
+        TodoPlugin.debug(myName + ": " + aId + " " + c + " -> " + aCount, 4);
     }
 }
