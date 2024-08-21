@@ -125,7 +125,6 @@ public class Prayer
         }
 
         for(Bones bones : new Bones[]{
-                new Bones(ItemID.BONES_3187, 3),
                 new Bones(ItemID.SMALL_ZOMBIE_MONKEY_BONES, 5),
                 new Bones(ItemID.LARGE_ZOMBIE_MONKEY_BONES, 5),
                 new Bones(ItemID.SMALL_NINJA_MONKEY_BONES, 16),

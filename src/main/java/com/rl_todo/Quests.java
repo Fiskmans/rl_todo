@@ -11,7 +11,6 @@ public class Quests
 {
     public static List<Quest> MiniQuests = new ArrayList<>(Arrays.asList(
             Quest.ENTER_THE_ABYSS,
-            Quest.ARCHITECTURAL_ALLIANCE,
             Quest.BEAR_YOUR_SOUL,
             Quest.ALFRED_GRIMHANDS_BARCRAWL,
             Quest.CURSE_OF_THE_EMPTY_LORD,
