@@ -79,15 +79,15 @@ public class MethodManager
     {
         for (Method method : myMethods.values())
         {
-            for(Resource resource : method.myMakes)
+            for(String resourceId : method.myMakes.Ids())
             {
-                myLookup.putIfAbsent(resource.myId, new ArrayList<>());
-                myLookup.get(resource.myId).add(method);
+                myLookup.putIfAbsent(resourceId, new ArrayList<>());
+                myLookup.get(resourceId).add(method);
             }
         }
 
         for (List<Method> list : myLookup.values())
-            Collections.sort(list, Comparator.comparing((Method a) -> a.myName));
+            list.sort(Comparator.comparing((Method a) -> a.myName));
 
         TodoPlugin.debug("Loaded " + myMethods.size() + " recipes", 1);
     }
@@ -98,7 +98,7 @@ public class MethodManager
         {
             AddDefaultMethod(
                     IdBuilder.levelId(skill),
-                    new LevelMethod(skill));
+                    new LevelMethod(myPlugin.myClient, skill));
 
             AddMethod(new StewBoostingMethod(skill));
         }

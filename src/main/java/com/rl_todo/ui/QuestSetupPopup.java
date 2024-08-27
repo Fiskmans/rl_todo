@@ -160,7 +160,7 @@ public class QuestSetupPopup extends JPopupMenu
                 for(ListedQuest quest : filteredQuests)
                 {
                     Selectable selectable = new Selectable(quest.myGameQuest.getName(), () -> {
-                        new Goal(null, myPlugin, IdBuilder.questId(quest.myGameQuest), 1, true);
+                        new Goal(myPlugin, IdBuilder.questId(quest.myGameQuest), 1, true, null);
                         myPlugin.myPanel.ResetContent();
                     });
 

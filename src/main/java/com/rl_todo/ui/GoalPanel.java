@@ -1,6 +1,5 @@
 package com.rl_todo.ui;
 
-import com.rl_todo.GoalCollection;
 import com.rl_todo.TodoPlugin;
 import net.runelite.api.ItemID;
 
@@ -12,14 +11,14 @@ import static net.runelite.api.SpriteID.*;
 
 public class GoalPanel extends JPanel
 {
-    public GoalCollection myGoals;
+    public GoalCollectionPanel myGoals;
     TodoPlugin myPlugin;
 
     public GoalPanel(TodoPlugin aPlugin)
     {
         super();
         myPlugin = aPlugin;
-        myGoals = new GoalCollection(myPlugin);
+        myGoals = new GoalCollectionPanel(myPlugin);
 
         setLayout(new GridBagLayout());
 
@@ -33,7 +32,7 @@ public class GoalPanel extends JPanel
         JButton addGoal = new JButton("Add Goal");
         addGoal.addActionListener(e -> {
             TodoPlugin.debug("Switched to add goal panel", 3);
-            myPlugin.myPanel.SetContent(new AddGoalPanel(myPlugin));
+            myPlugin.myPanel.SetContent(new AddGoalPanel(myPlugin, this));
         });
 
         add(addGoal, constraints);

@@ -6,6 +6,7 @@ import javax.swing.*;
 
 import com.rl_todo.methods.MethodManager;
 import com.rl_todo.ui.TodoPanel;
+import com.rl_todo.ui.Utilities;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.events.*;
@@ -67,12 +68,13 @@ public class TodoPlugin extends Plugin
 	public MethodManager myMethodManager;
 	public TodoPanel myPanel;
 	public Quests myQuest;
+	public Utilities myUtilities;
 
 	public static final BufferedImage ICON = ImageUtil.loadImageResource(TodoPlugin.class, "/Icon_16x16.png");
 	public static final String CONFIG_GROUP = "Todo";
 	private static final String LOG_TAG = "[todo] ";
 	private NavigationButton myNavButton;
-	static TodoPlugin myGlobalInstance = null;
+	private static TodoPlugin myGlobalInstance = null;
 	private boolean myIsLoaded = false;
 
 	public static void debug(Object aMessage, int aLevel)
@@ -110,7 +112,7 @@ public class TodoPlugin extends Plugin
 		debug("startUp", 1);
 
 		myGlobalInstance = this;
-
+		myUtilities = new Utilities(this);
 
 
 		myPanel = new TodoPanel(this);
@@ -133,7 +135,6 @@ public class TodoPlugin extends Plugin
 		{
 			myQuest = new Quests(this);
 			myMethodManager = new MethodManager(this);
-			myQuest.Load(); // TODO: this should be done on first game tick after logging in
 
 			SwingUtilities.invokeLater(()->
 			{
@@ -175,7 +176,6 @@ public class TodoPlugin extends Plugin
 					OnLogin();
 					break;
 				default:
-					myPanel.OnLoggedOut();
 					myIsLoaded = false;
 					break;
 			}
@@ -264,12 +264,6 @@ public class TodoPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onAccountHashChanged(AccountHashChanged event)
-	{
-		myPanel.Disable("Does not support switching accounts without restarting the plugin");
-	}
-
-	@Subscribe
 	public void onGameTick(GameTick event)
 	{
 		myProgressManager.Tick();
@@ -289,10 +283,8 @@ public class TodoPlugin extends Plugin
 		myIsLoaded = true;
 
 		myQuest.Load();
-		myPanel.OnLoggedIn();
 		mySources.RefreshNMZ(this);
 		mySources.RefreshLevels(this);
-
 
 		SwingUtilities.invokeLater(()->
 		{

@@ -1,7 +1,5 @@
 package com.rl_todo.ui;
 
-import com.rl_todo.GoalCollection;
-import com.rl_todo.ProgressManager;
 import com.rl_todo.TodoPlugin;
 import net.runelite.client.ui.PluginPanel;
 
@@ -20,7 +18,7 @@ public class TodoPanel extends PluginPanel
     private GoalPanel myDefaultContent;
     private TodoPlugin myPlugin;
 
-    public GoalCollection GetGoals()
+    public GoalCollectionPanel GetGoals()
     {
         return myDefaultContent.myGoals;
     }
@@ -53,7 +51,7 @@ public class TodoPanel extends PluginPanel
         constraint.gridy = 1;
         add(new JSeparator(), constraint);
 
-        Priv_SetContent(new OfflinePanel());
+        ResetContent();
     }
 
     private void Priv_SetContent(Component aComponent)
@@ -72,7 +70,6 @@ public class TodoPanel extends PluginPanel
 
         add(myContent, constraint);
 
-        revalidate();
         repaint();
     }
 
@@ -87,43 +84,5 @@ public class TodoPanel extends PluginPanel
         TodoPlugin.debug("Returned to main panel", 3);
         myBackButton.setVisible(false);
         Priv_SetContent(myDefaultContent);
-    }
-
-    public void OnLoggedIn()
-    {
-        TodoPlugin.debug("Logged in", 3);
-
-        assert !Objects.isNull(myStashedContent);
-
-        myBackButton.setVisible(myStashedContent != myDefaultContent);
-        Priv_SetContent(myStashedContent);
-
-        myStashedContent = null;
-    }
-
-    public void OnLoggedOut()
-    {
-        TodoPlugin.debug("Logged out", 3);
-
-        if (!Objects.isNull(myStashedContent))
-            return;
-
-        TodoPlugin.debug("Applied 'offline' panel", 3);
-
-        myStashedContent = myContent;
-        SwingUtilities.invokeLater(() ->
-        {
-            Priv_SetContent(new OfflinePanel());
-        });
-    }
-
-    public void Disable(String aReason)
-    {
-        //TODO Disable plugin
-    }
-
-    public void SaveConfig()
-    {
-        myDefaultContent.myGoals.SaveConfig();
     }
 }

@@ -2,16 +2,19 @@ package com.rl_todo.ui;
 
 import com.rl_todo.Goal;
 import com.rl_todo.TodoPlugin;
+import com.rl_todo.methods.Method;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.util.List;
 
 public class GoalPopup extends JPopupMenu
 {
     private TodoPlugin myPlugin;
     private Goal myGoal;
+    private List<Method> myAvailableMethods;
 
-    public GoalPopup(TodoPlugin aPlugin,Goal aGoal)
+    public GoalPopup(TodoPlugin aPlugin, Goal aGoal)
     {
         myPlugin = aPlugin;
         myGoal = aGoal;
@@ -30,13 +33,6 @@ public class GoalPopup extends JPopupMenu
             }
         });
 
-        JMenuItem setupMultipleMethod = new JMenuItem(new AbstractAction("Select multiple methods") {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                SetupMultiple();
-            }
-        });
-
         JMenuItem unsetMethod = new JMenuItem(new AbstractAction("Unset method") {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -51,43 +47,35 @@ public class GoalPopup extends JPopupMenu
             }
         });
 
-        add(new JLabel(myGoal.GetPrettyId()));
+        JLabel prettyName = new JLabel(myGoal.GetId());
+
+        add(prettyName);
+
+        myPlugin.myClientThread.invokeLater(() -> myPlugin.myUtilities.PrettifyID(myGoal.GetId()).ifPresent(prettyName::setText));
 
         if (myPlugin.myConfig.debug() > 1)
             add(new JLabel("Raw id: " + myGoal.GetId()));
 
-        String progress = myGoal.GetProgressText();
-        if (!progress.equals(""))
-            add(new JLabel(progress));
+       myPlugin.myUtilities.ProgressText(myGoal.GetProgress(), myGoal.GetTarget())
+               .ifPresent((string) -> add(new JLabel(string)));
 
-        add(new JLabel("Method: " + myGoal.GetMethodName()));
+        add(new JLabel("Method: " + myGoal.GetMethodName().orElse("<unset>")));
 
         add(new JSeparator());
 
         if (myGoal.HasMethod())
             add(unsetMethod);
 
-        switch(myGoal.GetMethodCandidates().size())
-        {
-            default:
-                add(setupMultipleMethod);
-            case 1:
-                add(setupMethod);
-                break;
-            case 0:
-                add(new JLabel("Select method: No known ways to acquire"));
-                break;
-        }
+        myAvailableMethods = myPlugin.myMethodManager.GetAvailableMethods(myGoal.GetId());
+
+        if (!myAvailableMethods.isEmpty())
+            add(setupMethod);
+
+        if (myGoal.CanSetTarget())
+            add(setAmount);
 
         if (myGoal.IsRoot())
-        {
-            if (myGoal.MaxTarget() > 1)
-            {
-                add(setAmount);
-            }
-
             add(deleteGoal);
-        }
     }
 
     void SetAmount()
@@ -109,7 +97,7 @@ public class GoalPopup extends JPopupMenu
                             return;
                         }
 
-                        myGoal.SetTarget(val, true);
+                        myGoal.SetTarget(val);
                     }
                     catch (Exception e)
                     {
@@ -122,13 +110,7 @@ public class GoalPopup extends JPopupMenu
     void Setup()
     {
         TodoPlugin.debug("Switched to method selector for " + myGoal, 3);
-        myPlugin.myPanel.SetContent(new MethodSelector(myPlugin, myGoal));
-    }
-
-    void SetupMultiple()
-    {
-        TodoPlugin.debug("Switched to multiple method selector for " + myGoal, 3);
-        myPlugin.myPanel.SetContent(new MethodMultiSelector(myPlugin, myGoal));
+        myPlugin.myPanel.SetContent(new MethodSelector(myPlugin, myGoal, myAvailableMethods));
     }
 
     void Delete()
@@ -142,6 +124,6 @@ public class GoalPopup extends JPopupMenu
 
     void Unset()
     {
-        myGoal.UnsetMethods(true);
+        myGoal.UnsetMethod();
     }
 }

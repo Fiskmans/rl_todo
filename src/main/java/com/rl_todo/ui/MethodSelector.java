@@ -19,12 +19,14 @@ public class MethodSelector extends JPanel
 {
     TodoPlugin myPlugin;
     Goal myTarget;
+    List<Method> myOptions;
     JPanel myMethodPanel = new JPanel();
 
-    MethodSelector(TodoPlugin aPlugin, Goal aTarget)
+    MethodSelector(TodoPlugin aPlugin, Goal aTarget, List<Method> aOptions)
     {
         myPlugin = aPlugin;
         myTarget = aTarget;
+        myOptions = aOptions;
 
         setLayout(new GridBagLayout());
         setPreferredSize(new Dimension(220,500));
@@ -73,7 +75,7 @@ public class MethodSelector extends JPanel
         methodConstraints.fill = GridBagConstraints.HORIZONTAL;
         methodConstraints.anchor = GridBagConstraints.WEST;
 
-        Add(new Tree(myTarget.GetMethodCandidates()), methodConstraints, 0);
+        Add(new Tree(myOptions), methodConstraints, 0);
 
 
         revalidate();
@@ -85,7 +87,7 @@ public class MethodSelector extends JPanel
         for(Method method : aTree.myMethods)
         {
             Selectable selectable = new Selectable(method.myName, () -> {
-                myTarget.SetMethod(method, true);
+                myTarget.SetMethod(method);
                 myPlugin.myPanel.ResetContent();
             });
 
@@ -102,7 +104,8 @@ public class MethodSelector extends JPanel
         }
     }
 
-    class Tree
+    // TODO: migrate this to custom tree implementation
+    static class Tree
     {
         Map<String, Tree> myChildNodes = new HashMap<>();
         List<Method> myMethods = new ArrayList<>();
