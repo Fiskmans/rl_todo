@@ -4,5 +4,5 @@ import javax.swing.*;
 
 public interface TreeNodeItem
 {
-    float GetAnchorDepth();
+    int GetAnchorDepth();
 }

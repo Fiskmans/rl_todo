@@ -1,29 +1,41 @@
 package com.rl_todo.ui;
 
 import com.rl_todo.Goal;
+import com.rl_todo.GoalSubscriber;
 import com.rl_todo.TodoPlugin;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
 
-public class GoalUI extends JPanel {
+public class GoalUI extends JPanel implements GoalSubscriber {
 
     TodoPlugin myPlugin;
     Goal myGoal;
+
+    BufferedImage myIcon;
 
     GoalUI(TodoPlugin aPlugin, Goal aGoal)
     {
         myPlugin = aPlugin;
         myGoal = aGoal;
 
+        myIcon = myPlugin.myUtilities.myErrorImage;
+
+        myPlugin.myClientThread.invokeLater(() ->
+        {
+            myIcon = myPlugin.myUtilities.IconFromID(myGoal.GetId(), myGoal.GetTarget());
+            repaint();
+        });
+
         add(Box.createRigidArea(new Dimension(50,50)));
 
         setMaximumSize(new Dimension(20000, 20));
         setPreferredSize(new Dimension(200, 20));
         setMinimumSize(new Dimension(20, 20));
-        setBackground(Color.white);
+        setBackground(Color.DARK_GRAY);
 
         addMouseListener(new MouseListener() {
             @Override
@@ -44,10 +56,14 @@ public class GoalUI extends JPanel {
             }
 
             @Override
-            public void mouseEntered(MouseEvent e) {}
+            public void mouseEntered(MouseEvent e) {
+                setBackground(Color.LIGHT_GRAY);
+            }
 
             @Override
-            public void mouseExited(MouseEvent e) {}
+            public void mouseExited(MouseEvent e) {
+                setBackground(Color.DARK_GRAY);
+            }
 
             private void OpenPopup(MouseEvent e)
             {
@@ -87,59 +103,59 @@ public class GoalUI extends JPanel {
         return myGoal.SetTarget(aTarget);
     }
 
-    /*
+    @Override
+    public void OnSubGoalAdded(Goal aSubGoal) {
+    }
+
+    @Override
+    public void OnTargetChanged() {
+        repaint();
+    }
+
+    @Override
+    public void OnBankedChanged() {
+        repaint();
+    }
+
+    @Override
+    public void OnProgressChanged() {
+        repaint();
+    }
+
+    @Override
+    public void OnMethodChanged() {
+
+    }
+
+    @Override
+    public void OnCompleted() {
+        repaint();
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        paintBackground(g);
-        int barStart = paintTree(g);
-        if (myTarget == UNBOUNDED)
-        {
-            // TODO paint unbounded goals
-        }
+        int width = getWidth();
+
+        if (width <= 60)
+            PaintCompact(g);
         else
-        {
-            paintProgressBar(g, barStart);
-        }
+            PaintNormal(g);
     }
 
-    private void paintBackground(Graphics g)
+    void PaintCompact(Graphics g)
     {
-        if (myIsHovered)
-        {
-            g.setColor(new Color(60, 60, 60));
-        }
-        else if (!Objects.isNull(myParent) && myParent.myIsHovered)
-        {
-            g.setColor(new Color(50, 50, 50));
-        }
-        else
-        {
-            g.setColor(new Color(43, 43, 44));
-        }
-
-        if (!Objects.isNull(ourDragging))
-        {
-            if (ourDragging == this)
-            {
-                g.setColor(new Color(60, 255, 60));
-            }
-            else if (myParent == ourDragging.myParent)
-            {
-                if (myIsHovered)
-                {
-                    g.setColor(new Color(60, 150, 150));
-                }
-                else
-                {
-                    g.setColor(new Color(60, 100, 100));
-                }
-            }
-        }
-
-        g.fillRect(0,0,getWidth(),getHeight());
+        // TODO: draw a compact rotation progressbar
     }
+
+    void PaintNormal(Graphics g)
+    {
+        g.drawImage(myIcon, 2, 2, 18, 18, null);
+        g.drawRect(0,0,19, 19);
+    }
+
+    /*
 
     private int paintTree(Graphics g)
     {

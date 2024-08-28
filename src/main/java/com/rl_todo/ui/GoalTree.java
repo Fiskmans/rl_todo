@@ -58,7 +58,7 @@ public class GoalTree extends TreeNode implements GoalSubscriber, TreeNodeItem
     }
 
     @Override
-    public float GetAnchorDepth() {
+    public int GetAnchorDepth() {
         return 10;
     }
 }

@@ -42,6 +42,7 @@ public class GoalCollectionPanel extends JPanel
     public void AddGoal(Goal aGoal)
     {
         add(new GoalTree(myPlugin, aGoal));
+        revalidate();
         repaint();
     }
 
@@ -55,6 +56,7 @@ public class GoalCollectionPanel extends JPanel
                 return;
             }
         }
+        revalidate();
         repaint();
     }
 

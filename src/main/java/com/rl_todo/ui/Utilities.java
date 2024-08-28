@@ -3,16 +3,22 @@ package com.rl_todo.ui;
 import com.rl_todo.TodoPlugin;
 import net.runelite.api.ItemComposition;
 import net.runelite.api.Quest;
+import net.runelite.api.SpriteID;
+import net.runelite.client.util.AsyncBufferedImage;
+import net.runelite.client.util.ImageUtil;
 
+import java.awt.image.BufferedImage;
 import java.util.Optional;
 
 public class Utilities {
 
     TodoPlugin myPlugin;
+    BufferedImage myErrorImage;
 
     public Utilities(TodoPlugin aPlugin)
     {
         myPlugin = aPlugin;
+        myErrorImage = ImageUtil.loadImageResource(TodoPlugin.class, "/Icon_16x16.png");
     }
 
     public Optional<String> PrettifyID(String aRawId)
@@ -78,5 +84,41 @@ public class Utilities {
             return Optional.empty();
 
         return Optional.of(Utilities.PrettyNumber(aProgress) + "/" + Utilities.PrettyNumber(aTarget));
+    }
+
+    public BufferedImage IconFromID(String aRawId, int aStackSize)
+    {
+        int index =  aRawId.indexOf('.');
+        if (index == -1)
+            return myErrorImage;
+
+        String type = aRawId.substring(0, index);
+        String part = aRawId.substring(index + 1);
+        switch (type)
+        {
+            case "item":
+                try
+                {
+                    int itemId = Integer.parseInt(part);
+
+                    ItemComposition itemComposition = myPlugin.myItemManager.getItemComposition(itemId);
+                    AsyncBufferedImage icon = myPlugin.myItemManager.getImage(itemId, aStackSize, itemComposition.isStackable());
+                    return icon; // TODO: allow some way to subscribe to onloaded for repaints
+                }
+                catch (final NumberFormatException ignored)
+                {
+                    return myErrorImage;
+                }
+            case "quest":
+                return myPlugin.mySpriteManager.getSprite(SpriteID.TAB_QUESTS, 0);
+            case "xp":
+            case "level":
+                return ImageUtil.loadImageResource(myPlugin.myClient.getClass(), "/skill_icons/" + part.toLowerCase() + ".png");
+            case "nmz":
+                return  myPlugin.mySpriteManager.getSprite(SpriteID.TAB_QUESTS_RED_MINIGAMES, 0);
+
+            default:
+                return myErrorImage;
+        }
     }
 }
