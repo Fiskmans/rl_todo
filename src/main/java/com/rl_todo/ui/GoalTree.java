@@ -12,12 +12,17 @@ import java.awt.*;
 public class GoalTree extends TreeNode implements GoalSubscriber, TreeNodeItem
 {
     TodoPlugin myPlugin;
+    Runnable myOnModified;
 
-    public GoalTree(TodoPlugin aPlugin, Goal aGoal)
+    public GoalTree(TodoPlugin aPlugin, Goal aGoal, Runnable aOnModified)
     {
         super(new GoalUI(aPlugin, aGoal));
 
         myPlugin = aPlugin;
+        myOnModified = aOnModified;
+
+        for (Goal subGoal : aGoal.GetChildren())
+            OnSubGoalAdded(subGoal);
 
         aGoal.AddSubscriber(this);
     }
@@ -29,12 +34,19 @@ public class GoalTree extends TreeNode implements GoalSubscriber, TreeNodeItem
 
     @Override
     public void OnSubGoalAdded(Goal aSubGoal) {
-        AddNode(new GoalTree(myPlugin, aSubGoal));
+        AddNode(new GoalTree(myPlugin, aSubGoal, myOnModified));
+        myOnModified.run();
+    }
+
+    @Override
+    public void OnSubGoalsCleared() {
+        RemoveAllNodes();
+        myOnModified.run();
     }
 
     @Override
     public void OnTargetChanged() {
-
+        myOnModified.run();
     }
 
     @Override
@@ -49,7 +61,7 @@ public class GoalTree extends TreeNode implements GoalSubscriber, TreeNodeItem
 
     @Override
     public void OnMethodChanged() {
-
+        myOnModified.run();
     }
 
     @Override

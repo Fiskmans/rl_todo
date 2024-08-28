@@ -118,7 +118,7 @@ public interface TodoConfig extends Config
 	@ConfigItem(
 			keyName = "goals",
 			name = "Goals",
-			description = "Current goals\nFormat:\nid|target|method"
+			description = "Current goals"
 	)
 	default String getGoals() { return ""; }
 

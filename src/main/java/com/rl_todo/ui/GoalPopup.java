@@ -118,7 +118,6 @@ public class GoalPopup extends JPopupMenu
         myPlugin.myClientThread.invokeLater(() ->
         {
             myPlugin.myPanel.GetGoals().RemoveGoal(myGoal);
-            myPlugin.myPanel.GetGoals().SaveConfig();
         });
     }
 

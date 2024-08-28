@@ -1,11 +1,14 @@
 package com.rl_todo.methods;
 
 import com.rl_todo.*;
+import com.rl_todo.serialization.SerializableMethod;
 import net.runelite.api.Quest;
 import net.runelite.api.Skill;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class Method
@@ -20,6 +23,62 @@ public class Method
     {
         myName = aName;
         myCategory = aCategory;
+    }
+
+    public static Method FromSerialized(SerializableMethod aSerialized, String aMainProduct)
+    {
+        Method method = new Method(aSerialized.name, "from_saved");
+
+        if (aSerialized.requires != null)
+            for (Map.Entry<String, SerializableMethod> kvPair : aSerialized.requires.entrySet())
+                method.myRequires.Add(kvPair.getKey(), kvPair.getValue().per_craft);
+
+        if (aSerialized.takes != null)
+            for (Map.Entry<String, SerializableMethod> kvPair : aSerialized.takes.entrySet())
+                method.myTakes.Add(kvPair.getKey(), kvPair.getValue().per_craft);
+
+        aSerialized.byproducts.forEach((key, value) -> method.myMakes.Add(key, value));
+        method.myMakes.Add(aMainProduct, aSerialized.per_craft);
+
+        return method;
+    }
+
+    public SerializableMethod SerializeSparse(String aMainProduct)
+    {
+        assert myMakes.GetSpecific(aMainProduct) > 0.f;
+
+        SerializableMethod out = new SerializableMethod();
+
+        out.per_craft = myMakes.GetSpecific(aMainProduct);
+
+        return out;
+    }
+
+    public void SerializeInto(SerializableMethod aSparseMethod, String aMainProduct)
+    {
+        aSparseMethod.name = myName;
+
+        aSparseMethod.byproducts = new HashMap<>();
+
+        myMakes.All().forEach((kvPair) -> {
+            if (!kvPair.getKey().equals(aMainProduct))
+                aSparseMethod.byproducts.put(kvPair.getKey(), kvPair.getValue());
+        });
+
+        aSparseMethod.requires = new HashMap<>();
+        myRequires.All().forEach((kvPair) -> aSparseMethod.requires.put(kvPair.getKey(), new SerializableMethod(kvPair.getValue())));
+
+        aSparseMethod.takes = new HashMap<>();
+        myTakes.All().forEach((kvPair) -> aSparseMethod.takes.put(kvPair.getKey(), new SerializableMethod(kvPair.getValue())));
+
+        if (aSparseMethod.takes.isEmpty())
+            aSparseMethod.takes = null;
+
+        if (aSparseMethod.requires.isEmpty())
+            aSparseMethod.requires = null;
+
+        if (aSparseMethod.byproducts.isEmpty())
+            aSparseMethod.byproducts = null;
     }
 
     public Method takes(int aItem)

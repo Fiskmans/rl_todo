@@ -1,14 +1,21 @@
 package com.rl_todo.ui;
 
+import com.google.gson.JsonObject;
 import com.rl_todo.Goal;
+import com.rl_todo.GoalSubscriber;
 import com.rl_todo.TodoPlugin;
+import com.rl_todo.serialization.SerializableGoal;
+import com.rl_todo.serialization.SerializableGoalCollection;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GoalCollectionPanel extends JPanel
 {
+    private List<Goal> myGoals = new ArrayList<>();
     private TodoPlugin myPlugin;
     private BoxLayout myLayout;
 
@@ -23,31 +30,20 @@ public class GoalCollectionPanel extends JPanel
         super.setBorder(new EmptyBorder(2,3,3,3));
     }
 
-    public void Load()
-    {
-        /*
-        TODO: reimplement serialize/deserialize
-        removeAll();
-
-        String[] lines = myPlugin.myConfig.getGoals().split("\n");
-
-        int at = 0;
-        while(at < lines.length)
-        {
-            at = new Goal(myPlugin, Arrays.asList(lines), at).mySkipTo;
-        }
-        */
-    }
-
     public void AddGoal(Goal aGoal)
     {
-        add(new GoalTree(myPlugin, aGoal));
+        myGoals.add(aGoal);
+        add(new GoalTree(myPlugin, aGoal, () -> myPlugin.RequestSave()));
+
         revalidate();
         repaint();
+
+        myPlugin.RequestSave();
     }
 
     public void RemoveGoal(Goal aGoal)
     {
+        myGoals.remove(aGoal);
         for(Component child : getComponents())
         {
             if (((GoalTree)child).GetGoalUI().myGoal == aGoal)
@@ -56,45 +52,40 @@ public class GoalCollectionPanel extends JPanel
                 return;
             }
         }
+
         revalidate();
         repaint();
+
+        myPlugin.RequestSave();
     }
 
-    public void OnConfigChanged()
+    public String Serialize()
     {
-        // TODO make this work
+        SerializableGoalCollection serialized = new SerializableGoalCollection();
 
-        // current issue:
-        // Creating a goal -> user actions -> saves to config -> causes config reload -> reloads goal while it's being added
+        serialized.goals = new ArrayList<>();
+        myGoals.forEach((goal) -> serialized.goals.add(goal.Serialize()));
 
-        //SwingUtilities.invokeLater(()->
-        //{
-        //    for (Goal goal : myGoals) {
-        //        remove(goal);
-        //        myPlugin.myProgressManager.RemoveTracker(goal, goal.GetId());
-        //        goal.OnRemoved();
-        //    }
-        //
-        //    myGoals.clear();;
-        //    Load();
-        //});
+        return myPlugin.myGson
+                .newBuilder()
+                .setPrettyPrinting()
+                .create()
+                .toJson(serialized);
     }
 
-    public void SaveConfig()
+    public void Deserialize(JsonObject aBlob)
     {
-        // TODO
-        //List<String> lines = new ArrayList<>();
+        removeAll();
+        myGoals.clear();
 
-        //for (Goal goal : Arrays.stream(getComponents()).map((comp) -> { return (Goal)comp; }).toArray())
-        //{
-        //    if (!goal.IsRoot())
-        //    {
-        //        continue;
-        //    }
+        SerializableGoalCollection serializedGoals = myPlugin.myGson.fromJson(aBlob, SerializableGoalCollection.class);
 
-        //    goal.Serialize(lines, 0);
-        //}
-
-        //TodoPlugin.myGlobalInstance.myConfig.setGoals(String.join("\n", lines));
+        if (serializedGoals != null)
+        {
+            if (serializedGoals.goals != null)
+            {
+                serializedGoals.goals.forEach((goal) -> { AddGoal(Goal.FromSerialized(myPlugin, goal)); });
+            }
+        }
     }
 }

@@ -19,8 +19,8 @@ public class TreeBranch extends JPanel {
     Color myHoverColor = Color.LIGHT_GRAY;
     Color myNormalCoplor = Color.white;
 
-    static int Indent = 20;
-    static int ArcRadius = 5;
+    public static int Indent = 20;
+    public static int ArcRadius = 5;
 
     TreeBranch()
     {

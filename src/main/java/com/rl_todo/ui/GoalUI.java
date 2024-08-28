@@ -32,8 +32,8 @@ public class GoalUI extends JPanel implements GoalSubscriber {
 
         add(Box.createRigidArea(new Dimension(50,50)));
 
-        setMaximumSize(new Dimension(20000, 20));
-        setPreferredSize(new Dimension(200, 20));
+        setMaximumSize(new Dimension(20000000, 20));
+        setPreferredSize(new Dimension(100, 20));
         setMinimumSize(new Dimension(20, 20));
         setBackground(Color.DARK_GRAY);
 
@@ -105,6 +105,10 @@ public class GoalUI extends JPanel implements GoalSubscriber {
 
     @Override
     public void OnSubGoalAdded(Goal aSubGoal) {
+    }
+
+    @Override
+    public void OnSubGoalsCleared() {
     }
 
     @Override

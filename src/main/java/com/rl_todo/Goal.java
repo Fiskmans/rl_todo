@@ -1,6 +1,8 @@
 package com.rl_todo;
 
 import com.rl_todo.methods.Method;
+import com.rl_todo.serialization.SerializableGoal;
+import com.rl_todo.serialization.SerializableMethod;
 import net.runelite.api.ChatMessageType;
 
 import java.util.*;
@@ -15,6 +17,8 @@ public class Goal implements ProgressTracker
 
     private final List<GoalSubscriber> mySubscribers;
     private final List<Goal> myChildren;
+
+    public List<Goal> GetChildren() { return myChildren; }
 
     private Method myMethod;
 
@@ -62,6 +66,77 @@ public class Goal implements ProgressTracker
         Setup();
     }
 
+    private void SetChildMethodFromSerialized(SerializableMethod aSerializedMethod)
+    {
+        assert !myChildren.isEmpty();
+        assert HasMethod();
+
+        
+    }
+
+    public static Goal FromSerialized(TodoPlugin aPlugin, SerializableGoal aSerialized)
+    {
+        assert aSerialized.IsValid();
+
+        Goal out = new Goal(aPlugin, aSerialized.id, aSerialized.target, true, null);
+
+        if (aSerialized.from != null && aSerialized.from.IsValid())
+        {
+            out.SetMethod(Method.FromSerialized(aSerialized.from, out.myId));
+            out.SetChildMethodFromSerialized(aSerialized.from);
+        }
+
+        return out;
+    }
+
+    public void FillInMethod(SerializableMethod aMethod)
+    {
+        if (!HasMethod())
+            return;
+
+        myMethod.SerializeInto(aMethod, myId);
+
+        if (aMethod.takes != null)
+        {
+            aMethod.takes.forEach((id, subMethod) ->
+                    myChildren.forEach((child) ->
+                    {
+                        if (child.myId.equals(id))
+                            child.FillInMethod(subMethod);
+                    }));
+        }
+
+        if (aMethod.requires != null)
+        {
+            aMethod.requires.forEach((id, subMethod) ->
+            {
+                myChildren.forEach((child) ->
+                {
+                    if (child.myId.equals(id))
+                        child.FillInMethod(subMethod);
+                });
+            });
+        }
+    }
+
+    public SerializableGoal Serialize()
+    {
+        assert IsRoot();
+
+        SerializableGoal out = new SerializableGoal();
+
+        out.id = myId;
+        out.target = myTarget;
+
+        if (HasMethod())
+        {
+            out.from = myMethod.SerializeSparse(myId);
+            FillInMethod(out.from);
+        }
+
+        return out;
+    }
+
     public void AddSubscriber(GoalSubscriber aSubscriber)
     {
         mySubscribers.add(aSubscriber);
@@ -107,6 +182,8 @@ public class Goal implements ProgressTracker
     {
         myMethod = null;
         myChildren.clear();
+
+        mySubscribers.forEach(GoalSubscriber::OnSubGoalsCleared);
     }
 
     public void SetMethod(Method aMethod)
@@ -140,6 +217,9 @@ public class Goal implements ProgressTracker
         subscribers.add(new GoalSubscriber() {
             @Override
             public void OnSubGoalAdded(Goal aSubGoal) {}
+
+            @Override
+            public void OnSubGoalsCleared() {}
 
             @Override
             public void OnTargetChanged() {}

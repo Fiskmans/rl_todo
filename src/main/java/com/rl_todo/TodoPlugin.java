@@ -1,5 +1,8 @@
 package com.rl_todo;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.inject.Provides;
 import javax.inject.Inject;
 import javax.swing.*;
@@ -7,6 +10,7 @@ import javax.swing.*;
 import com.rl_todo.methods.MethodManager;
 import com.rl_todo.ui.TodoPanel;
 import com.rl_todo.ui.Utilities;
+import com.rl_todo.ui.toolbox.TreeBranch;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.events.*;
@@ -23,8 +27,10 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.util.ImageUtil;
+import static net.runelite.client.RuneLite.RUNELITE_DIR;
 
 import java.awt.image.BufferedImage;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -64,6 +70,11 @@ public class TodoPlugin extends Plugin
 	public ChatboxItemSearch myChatboxItemSearch;
 	@Inject
 	public ChatboxTextInput myChatboxTextInput;
+	@Inject
+	public Gson myGson;
+
+	public static final File ROOT_DIRECTORY = new File(RUNELITE_DIR, "todo_plugin");
+	public static final String DATA_FILE = ROOT_DIRECTORY + File.separator + "goals.json";
 
 	public MethodManager myMethodManager;
 	public TodoPanel myPanel;
@@ -76,6 +87,7 @@ public class TodoPlugin extends Plugin
 	private NavigationButton myNavButton;
 	private static TodoPlugin myGlobalInstance = null;
 	private boolean myIsLoaded = false;
+	private boolean myWantsSave = false;
 
 	public static void debug(Object aMessage, int aLevel)
 	{
@@ -110,6 +122,9 @@ public class TodoPlugin extends Plugin
 	protected void startUp() throws Exception
 	{
 		debug("startUp", 1);
+
+		TreeBranch.Indent = 10;
+		TreeBranch.ArcRadius = 3;
 
 		myGlobalInstance = this;
 		myUtilities = new Utilities(this);
@@ -250,10 +265,6 @@ public class TodoPlugin extends Plugin
 		if (!event.getGroup().equals(CONFIG_GROUP))
 			return;
 
-		SwingUtilities.invokeLater(()->
-		{
-			myPanel.GetGoals().OnConfigChanged();
-		});
 	}
 
 	@Subscribe
@@ -267,6 +278,11 @@ public class TodoPlugin extends Plugin
 	public void onGameTick(GameTick event)
 	{
 		myProgressManager.Tick();
+		if (myWantsSave)
+		{
+			Save();
+			myWantsSave = false;
+		}
 	}
 
 	@Provides
@@ -286,9 +302,49 @@ public class TodoPlugin extends Plugin
 		mySources.RefreshNMZ(this);
 		mySources.RefreshLevels(this);
 
-		SwingUtilities.invokeLater(()->
+		if (new File(DATA_FILE).exists())
 		{
-			myPanel.GetGoals().Load();
-		});
+			SwingUtilities.invokeLater(()->
+			{
+				try
+				{
+					FileReader reader = new FileReader(DATA_FILE);
+					JsonObject content = new JsonParser().parse(reader).getAsJsonObject();
+					myPanel.GetGoals().Deserialize(content);
+				}
+				catch (Exception aException)
+				{
+					IgnorableError("Failed to load goals from " + DATA_FILE);
+					IgnorableError(aException.getMessage());
+				}
+
+				myWantsSave = false;
+			});
+		}
+	}
+
+	public void RequestSave()
+	{
+		myWantsSave = true;
+	}
+
+	private void Save()
+	{
+		String content = myPanel.GetGoals().Serialize();
+
+		ROOT_DIRECTORY.mkdirs();
+
+		try
+		{
+			BufferedWriter writer = new BufferedWriter(new FileWriter(DATA_FILE));
+			writer.write(content);
+			writer.close();
+		}
+		catch (IOException exception)
+		{
+			IgnorableError("Failed to save goals to " + DATA_FILE);
+		}
+
+		log.info(content);
 	}
 }

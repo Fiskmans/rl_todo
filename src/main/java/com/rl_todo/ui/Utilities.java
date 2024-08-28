@@ -1,5 +1,6 @@
 package com.rl_todo.ui;
 
+import com.rl_todo.Alternative;
 import com.rl_todo.TodoPlugin;
 import net.runelite.api.ItemComposition;
 import net.runelite.api.Quest;
@@ -58,6 +59,10 @@ public class Utilities {
                 return Optional.of(part.substring(0,1).toUpperCase() + part.substring(1).toLowerCase() + " level");
             case "nmz":
                 return Optional.of("NMZ points");
+            case "any":
+                return Alternative
+                        .FromID(part)
+                        .map(Alternative::getName);
 
             default:
                 return Optional.empty();

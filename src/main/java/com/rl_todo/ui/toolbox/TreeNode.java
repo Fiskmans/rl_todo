@@ -30,4 +30,13 @@ public class TreeNode extends JPanel
         myBranch.AddNode(aNode);
         //repaint();
     }
+
+    public void RemoveAllNodes()
+    {
+        if (myBranch != null)
+        {
+            remove(myBranch);
+            myBranch = null;
+        }
+    }
 }
