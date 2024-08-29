@@ -1,5 +1,6 @@
 package com.rl_todo.ui;
 
+import com.rl_todo.DrawingUtils;
 import com.rl_todo.Goal;
 import com.rl_todo.GoalSubscriber;
 import com.rl_todo.TodoPlugin;
@@ -16,6 +17,7 @@ public class GoalUI extends JPanel implements GoalSubscriber {
     Goal myGoal;
 
     BufferedImage myIcon;
+    String myPrettyId;
 
     GoalUI(TodoPlugin aPlugin, Goal aGoal)
     {
@@ -23,10 +25,12 @@ public class GoalUI extends JPanel implements GoalSubscriber {
         myGoal = aGoal;
 
         myIcon = myPlugin.myUtilities.myErrorImage;
+        myPrettyId = myGoal.GetId();
 
         myPlugin.myClientThread.invokeLater(() ->
         {
             myIcon = myPlugin.myUtilities.IconFromID(myGoal.GetId(), myGoal.GetTarget());
+            myPlugin.myUtilities.PrettifyID(myGoal.GetId()).ifPresent((prettyId) -> myPrettyId = prettyId);
             repaint();
         });
 
@@ -155,8 +159,15 @@ public class GoalUI extends JPanel implements GoalSubscriber {
 
     void PaintNormal(Graphics g)
     {
+        g.setColor(Color.BLACK);
+        g.fillRect(0,0,20, 20);
         g.drawImage(myIcon, 2, 2, 18, 18, null);
+        g.setColor(myPlugin.myConfig.treeColor());
         g.drawRect(0,0,19, 19);
+
+        DrawingUtils.DrawText(myPlugin, g, myPrettyId, 23, 2, false, true);
+
+        //DrawingUtils.DrawText(myPlugin, g, progressText, getWidth(), getHeight() - 2, true, false);
     }
 
     /*

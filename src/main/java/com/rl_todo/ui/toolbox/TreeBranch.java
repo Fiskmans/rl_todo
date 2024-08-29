@@ -16,8 +16,8 @@ public class TreeBranch extends JPanel {
     JPanel myNodePanel = new JPanel();
 
     boolean myIsHovered = false;
-    Color myHoverColor = Color.LIGHT_GRAY;
-    Color myNormalCoplor = Color.white;
+    public static Color myHoverColor = Color.LIGHT_GRAY;
+    public static Color myNormalCoplor = Color.white;
 
     public static int Indent = 20;
     public static int ArcRadius = 5;

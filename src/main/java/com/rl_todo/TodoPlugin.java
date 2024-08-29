@@ -125,6 +125,7 @@ public class TodoPlugin extends Plugin
 
 		TreeBranch.Indent = 10;
 		TreeBranch.ArcRadius = 3;
+		TreeBranch.myNormalCoplor = myConfig.treeColor();
 
 		myGlobalInstance = this;
 		myUtilities = new Utilities(this);
