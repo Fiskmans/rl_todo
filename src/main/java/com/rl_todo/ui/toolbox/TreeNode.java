@@ -7,7 +7,7 @@ public class TreeNode extends JPanel
 {
     TreeBranch myBranch = null;
 
-    protected Component myContent;
+    protected JComponent myContent;
 
     public TreeNode(JComponent aContent)
     {
@@ -24,6 +24,7 @@ public class TreeNode extends JPanel
         if (myBranch == null)
         {
             myBranch = new TreeBranch();
+            myBranch.setAlignmentX(RIGHT_ALIGNMENT);
             add(myBranch);
         }
 

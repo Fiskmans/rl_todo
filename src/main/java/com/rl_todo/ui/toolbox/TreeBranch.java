@@ -22,7 +22,7 @@ public class TreeBranch extends JPanel {
     public static int Indent = 20;
     public static int ArcRadius = 5;
 
-    TreeBranch()
+    public TreeBranch()
     {
         setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
 
@@ -31,7 +31,6 @@ public class TreeBranch extends JPanel {
         add(strut);
 
         myNodePanel.setLayout(new BoxLayout(myNodePanel, BoxLayout.PAGE_AXIS));
-
         myNodePanel.setAlignmentY(0.0f);
         add(myNodePanel);
 
@@ -67,6 +66,7 @@ public class TreeBranch extends JPanel {
 
     public <T extends JComponent & TreeNodeItem> void AddNode(T aNode)
     {
+        aNode.setAlignmentX(RIGHT_ALIGNMENT);
         myNodePanel.add(aNode);
     }
 
@@ -78,7 +78,7 @@ public class TreeBranch extends JPanel {
     Stream<TreeNodeItem> Nodes()
     {
         return Arrays.stream(myNodePanel.getComponents())
-                .map((child) -> { return (TreeNodeItem)child; });
+                .map((child) -> (TreeNodeItem)child);
     }
 
     @Override

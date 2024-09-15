@@ -18,11 +18,17 @@ public class GoalUI extends JPanel implements GoalSubscriber {
 
     BufferedImage myIcon;
     String myPrettyId;
+    boolean myIsHovered = false;
+
+    static int IconSize = 18;
+    static int Height = 20;
 
     GoalUI(TodoPlugin aPlugin, Goal aGoal)
     {
         myPlugin = aPlugin;
         myGoal = aGoal;
+
+        myGoal.AddSubscriber(this);
 
         myIcon = myPlugin.myUtilities.myErrorImage;
         myPrettyId = myGoal.GetId();
@@ -34,12 +40,10 @@ public class GoalUI extends JPanel implements GoalSubscriber {
             repaint();
         });
 
-        add(Box.createRigidArea(new Dimension(50,50)));
+        setMaximumSize(new Dimension(2000, Height));
+        setPreferredSize(new Dimension(IconSize, Height));
+        setMinimumSize(new Dimension(IconSize, Height));
 
-        setMaximumSize(new Dimension(20000000, 20));
-        setPreferredSize(new Dimension(100, 20));
-        setMinimumSize(new Dimension(20, 20));
-        setBackground(Color.DARK_GRAY);
 
         addMouseListener(new MouseListener() {
             @Override
@@ -61,12 +65,14 @@ public class GoalUI extends JPanel implements GoalSubscriber {
 
             @Override
             public void mouseEntered(MouseEvent e) {
-                setBackground(Color.LIGHT_GRAY);
+                myIsHovered = true;
+                repaint();
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                setBackground(Color.DARK_GRAY);
+                myIsHovered = false;
+                repaint();
             }
 
             private void OpenPopup(MouseEvent e)
@@ -75,36 +81,6 @@ public class GoalUI extends JPanel implements GoalSubscriber {
                 menu.show(e.getComponent(), e.getX(), e.getY() + 14);
             }
         });
-    }
-
-    boolean CanClearMethod()
-    {
-        return myGoal.HasMethod();
-    }
-
-    boolean CanSetTarget()
-    {
-        return myGoal.CanSetTarget();
-    }
-
-    boolean CanDelete()
-    {
-        return myGoal.IsRoot();
-    }
-
-    String GetSetAmountStartText()
-    {
-        return Integer.toString(myGoal.GetTarget());
-    }
-
-    int GetMaxTarget()
-    {
-        return myGoal.MaxTarget();
-    }
-
-    boolean TrySetTarget(int aTarget)
-    {
-        return myGoal.SetTarget(aTarget);
     }
 
     @Override
@@ -146,9 +122,9 @@ public class GoalUI extends JPanel implements GoalSubscriber {
 
         int width = getWidth();
 
-        if (width <= 60)
-            PaintCompact(g);
-        else
+        //if (width <= 60)
+        //    PaintCompact(g);
+        //else
             PaintNormal(g);
     }
 
@@ -159,159 +135,31 @@ public class GoalUI extends JPanel implements GoalSubscriber {
 
     void PaintNormal(Graphics g)
     {
+        g.setColor(Utilities.BlendColors(Color.DARK_GRAY, Color.WHITE, myIsHovered ? 0.2f : 0.0f));
+        g.fillRect(0, 0, getWidth(), getHeight());
+
+        int bankedWidth = (int)Math.floor(myGoal.GetBankedFraction() * getWidth());
+
+        g.setColor(Utilities.BlendColors(myPlugin.myConfig.bankedColor(), Color.WHITE, myIsHovered ? 0.2f : 0.0f));
+        g.fillRect(0,0, bankedWidth, getHeight());
+
+        int progressWidth = (int)Math.floor(myGoal.GetProgressFraction() * getWidth());
+
+        g.setColor(Utilities.BlendColors(myPlugin.myConfig.completedColor(), Color.WHITE, myIsHovered ? 0.2f : 0.0f));
+        g.fillRect(0,0, progressWidth, getHeight());
+
+
         g.setColor(Color.BLACK);
-        g.fillRect(0,0,20, 20);
-        g.drawImage(myIcon, 2, 2, 18, 18, null);
+        g.fillRect(0,0,IconSize, IconSize);
+        g.drawImage(myIcon, 2, 2, IconSize - 2, IconSize - 2, null);
         g.setColor(myPlugin.myConfig.treeColor());
-        g.drawRect(0,0,19, 19);
+        g.drawRect(0,0,IconSize - 1, IconSize - 1);
 
-        DrawingUtils.DrawText(myPlugin, g, myPrettyId, 23, 2, false, true);
+        DrawingUtils.DrawText(myPlugin, g, myPrettyId, IconSize + 3, 2, false, true);
 
-        //DrawingUtils.DrawText(myPlugin, g, progressText, getWidth(), getHeight() - 2, true, false);
+        myPlugin.myUtilities.ProgressText(myGoal.GetProgress(), myGoal.GetTarget())
+            .ifPresent((progressText) ->
+                DrawingUtils.DrawText(myPlugin, g, progressText, getWidth() - 2, getHeight() - 2, true, false));
     }
 
-    /*
-
-    private int paintTree(Graphics g)
-    {
-        Stack<Goal> hierarcy = new Stack<>();
-
-        Goal at = myParent;
-        while (!Objects.isNull(at))
-        {
-            hierarcy.push(at);
-            at = at.myParent;
-        }
-
-        g.setColor(myPlugin.myConfig.treeColor());
-
-        int depth = 0;
-
-        if(!hierarcy.isEmpty())
-        {
-            hierarcy.pop(); // the root node does not have any branches
-
-            while(!hierarcy.isEmpty())
-            {
-                Goal goal = hierarcy.pop();
-
-                int xMiddle = depth + (int)Math.round(myPlugin.myConfig.indent() * 0.5);
-                if (!goal.myIsLast)
-                    g.drawLine(xMiddle, 0, xMiddle, getHeight());
-
-                depth += myPlugin.myConfig.indent();
-            }
-        }
-
-        if(!Objects.isNull(myParent))
-        {
-            int xMiddle = depth + (int)Math.round(myPlugin.myConfig.indent() * 0.5);
-            int xRight = depth + myPlugin.myConfig.indent();
-            int yMiddle = (int)Math.round(myPlugin.myConfig.rowHeight() * 0.5);
-            int offset = (int)Math.round(Math.min(myPlugin.myConfig.indent(), myPlugin.myConfig.rowHeight()) * 0.2);
-
-            if (myIsLast)
-            {
-                g.drawLine(xMiddle, 0, xMiddle, yMiddle - offset);
-                g.drawLine(xMiddle, yMiddle - offset, xMiddle + offset, yMiddle);
-                g.drawLine(xMiddle + offset, yMiddle, xRight, yMiddle);
-            }
-            else
-            {
-                g.drawLine(xMiddle, 0, xMiddle, getHeight());
-                g.drawLine(xMiddle, yMiddle, xRight, yMiddle);
-            }
-            depth += myPlugin.myConfig.indent();
-        }
-
-
-        int iconStart = depth;
-
-        if (myIcon != null)
-            g.drawImage(myIcon, iconStart + 1,1,myPlugin.myConfig.rowHeight() - 2,myPlugin.myConfig.rowHeight() - 2, null);
-
-        //image border
-        g.drawRect(depth, 0, myPlugin.myConfig.rowHeight() - 1, myPlugin.myConfig.rowHeight() - 1);
-
-        if (myIsInDoubleRowMode && myChildren.size() > 0)
-        {
-            int childBranch = depth + (int)Math.round(myPlugin.myConfig.indent() * 0.5);
-
-            g.drawLine(childBranch, myPlugin.myConfig.rowHeight(), childBranch, getHeight());
-        }
-
-        return depth + myPlugin.myConfig.rowHeight();
-    }
-
-    private void paintProgressBar(Graphics g, int aStartPosition)
-    {
-        float progress = (float)GetProgress() / GetTarget();
-        float banked = (float)Math.min(GetProgress() + GetBanked(), GetTarget()) / GetTarget();
-
-
-        int barWidth = getWidth() - aStartPosition;
-
-        FontMetrics metrics = g.getFontMetrics();
-        String progressText = GetProgressText();
-
-        int totalTextWidth = 0;
-
-        {
-            char[] chars = new char[myPrettyId.length()];
-            myPrettyId.getChars(0,myPrettyId.length(), chars, 0);
-
-            totalTextWidth += metrics.charsWidth(chars,0, chars.length);
-        }
-
-        if (myTarget != 1)
-        {
-            char[] chars = new char[progressText.length()];
-            progressText.getChars(0,progressText.length(), chars, 0);
-            totalTextWidth += metrics.charsWidth(chars,0, chars.length);
-        }
-
-        if (totalTextWidth + 10 > barWidth && !progressText.equals(""))
-        {
-            if (!myIsInDoubleRowMode)
-            {
-                myIsInDoubleRowMode = true;
-                myPlugin.myPanel.GetGoals().invalidate();
-                myPlugin.myPanel.GetGoals().revalidate();
-                return;
-            }
-        }
-        else
-        {
-            if (myIsInDoubleRowMode)
-            {
-                myIsInDoubleRowMode = false;
-                myPlugin.myPanel.GetGoals().invalidate();
-                myPlugin.myPanel.GetGoals().revalidate();
-                return;
-            }
-        }
-
-        int progressWidth = (int)(barWidth * progress);
-        int bankedWidth = (int)(barWidth * banked);
-
-        g.setColor(myPlugin.myConfig.completedColor());
-        g.fillRect(aStartPosition,0,progressWidth,getHeight());
-
-        g.setColor(myPlugin.myConfig.bankedColor());
-        g.fillRect(aStartPosition + progressWidth,0,bankedWidth - progressWidth,getHeight());
-
-        DrawingUtils.DrawText(myPlugin, g, myPrettyId, aStartPosition + 3, 2, false, true);
-
-        if (!progressText.equals(""))
-            DrawingUtils.DrawText(myPlugin, g, progressText, getWidth(), getHeight() - 2, true, false);
-
-        g.setColor(myPlugin.myConfig.treeColor());
-        g.drawLine(aStartPosition, getHeight() - 1, getWidth(), getHeight() - 1);
-        if (myIsInDoubleRowMode)
-        {
-            g.drawLine(aStartPosition - 1, myPlugin.myConfig.rowHeight(), aStartPosition - 1, getHeight() - 1);
-        }
-    }
-
-     */
 }

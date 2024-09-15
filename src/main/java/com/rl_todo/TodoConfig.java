@@ -93,22 +93,6 @@ public interface TodoConfig extends Config
 	default Color treeColor() { return new Color(80,80,80); }
 
 	@ConfigItem(
-			keyName = "row_size",
-			name = "Row height",
-			description = "How high every goal should be displayed, also affects icon size",
-			section = colorSection
-	)
-	default int rowHeight() { return 18; }
-
-	@ConfigItem(
-			keyName = "indent",
-			name = "Indent",
-			description = "How indented subtasks should be",
-			section = colorSection
-	)
-	default int indent() { return 12; }
-
-	@ConfigItem(
 			keyName = "messageOnCompletion",
 			name = "Message on Completion",
 			description = "Whether to send a message in the game chat whenever you fully complete a goal/subgoal"
@@ -116,17 +100,10 @@ public interface TodoConfig extends Config
 	default boolean messageOnCompletion() { return true; }
 
 	@ConfigItem(
-			keyName = "goals",
-			name = "Goals",
-			description = "Current goals"
+			keyName = "method_sources",
+			name = "Method sources",
+			description = "Which folders to look in for methods"
 	)
-	default String getGoals() { return ""; }
-
-	@ConfigItem(
-			keyName = "goals",
-			name = "",
-			description = ""
-	)
-	void setGoals(String aString);
+	default String methodSources() { return "${runelite}/todo_plugin/methods/custom;${runelite}/todo_plugin/methods/wiki"; }
 
 }

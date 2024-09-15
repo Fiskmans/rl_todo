@@ -66,10 +66,7 @@ public class GoalPopup extends JPopupMenu
         if (myGoal.HasMethod())
             add(unsetMethod);
 
-        myAvailableMethods = myPlugin.myMethodManager.GetAvailableMethods(myGoal.GetId());
-
-        if (!myAvailableMethods.isEmpty())
-            add(setupMethod);
+        add(setupMethod);
 
         if (myGoal.CanSetTarget())
             add(setAmount);
@@ -110,15 +107,12 @@ public class GoalPopup extends JPopupMenu
     void Setup()
     {
         TodoPlugin.debug("Switched to method selector for " + myGoal, 3);
-        myPlugin.myPanel.SetContent(new MethodSelector(myPlugin, myGoal, myAvailableMethods));
+        myPlugin.myPanel.SetContent(new MethodSelectorPanel(myPlugin, myGoal));
     }
 
     void Delete()
     {
-        myPlugin.myClientThread.invokeLater(() ->
-        {
-            myPlugin.myPanel.GetGoals().RemoveGoal(myGoal);
-        });
+        myPlugin.myClientThread.invokeLater(() -> myPlugin.myPanel.GetGoals().RemoveGoal(myGoal));
     }
 
     void Unset()

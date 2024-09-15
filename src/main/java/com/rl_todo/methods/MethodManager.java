@@ -1,322 +1,106 @@
 package com.rl_todo.methods;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import com.rl_todo.*;
+import com.rl_todo.serialization.SerializableMethod;
 import net.runelite.api.*;
 import net.runelite.client.plugins.skillcalculator.skills.MiningAction;
 import net.runelite.client.plugins.skillcalculator.skills.SmithingAction;
 
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Stream;
 
-class Costs
-{
-    int myCost;
-    int myResult;
-
-    public Costs(int aCosts, int aResult)
-    {
-        myCost = aCosts;
-        myResult = aResult;
-    }
-}
-
-class WildcardRecipe
-{
-    public String myPath;
-    public Method myMethod;
-
-    public WildcardRecipe(String aPath, Method aMethod)
-    {
-        myPath = aPath;
-        myMethod = aMethod;
-    }
-}
+import static net.runelite.client.RuneLite.RUNELITE_DIR;
 
 public class MethodManager
 {
     private TodoPlugin myPlugin;
 
-    private Map<String, Method> myMethods = new HashMap<>();
-    private List<WildcardRecipe> myDefaultMethod = new ArrayList<>();
+    private List<Method> myMethods = new ArrayList<>();
 
     private Map<String, List<Method>> myLookup = new HashMap<>();
-    final private List<Method> myEmptyList = new ArrayList<>();
 
     public MethodManager(TodoPlugin aPlugin)
     {
         myPlugin = aPlugin;
 
-        LoadAllLevels();
-        LoadAllSkills();
-        LoadCapesOfAccomplishments();
-        LoadNMZInfusions();
-
-        QuestsMethods.AddAll(this, myPlugin);
-        MonsterLoot.AddAll(this, myPlugin);
-
-        BuildTables();
-    }
-
-    public Method GetMethodByName(String aName) { return myMethods.get(aName.toLowerCase()); }
-
-    public List<Method> GetAvailableMethods(String aId)
-    {
-        return myLookup.getOrDefault(aId, myEmptyList);
-    }
-
-    protected void AddDefaultMethod(String aId, Method aMethod)
-    {
-        myDefaultMethod.add(new WildcardRecipe(aId, aMethod));
-        AddMethod(aMethod);
-    }
-
-    protected void AddMethod(Method aMethod)
-    {
-        Object prev = myMethods.putIfAbsent(aMethod.myName.toLowerCase(), aMethod);
-        assert prev == null : "Recipe with duplicate key " + aMethod.myName.toLowerCase();
-    }
-
-    private void BuildTables()
-    {
-        for (Method method : myMethods.values())
-        {
-            for(String resourceId : method.myMakes.Ids())
-            {
-                myLookup.putIfAbsent(resourceId, new ArrayList<>());
-                myLookup.get(resourceId).add(method);
-            }
-        }
-
-        for (List<Method> list : myLookup.values())
-            list.sort(Comparator.comparing((Method a) -> a.myName));
+        LoadFromConfig();
 
         TodoPlugin.debug("Loaded " + myMethods.size() + " recipes", 1);
     }
 
-    private void LoadAllLevels()
+    private void LoadFromConfig()
     {
-        for(Skill skill : Skill.values())
-        {
-            AddDefaultMethod(
-                    IdBuilder.levelId(skill),
-                    new LevelMethod(myPlugin.myClient, skill));
+        Arrays.stream(myPlugin.myConfig.methodSources().split("[\\n\\r,;]"))
+            .map((string) -> string.replace("${runelite}", RUNELITE_DIR.toString()))
+            .forEach((dir) -> {
+                try
+                {
+                    Files.walk(Paths.get(dir))
+                        .filter(Files::isRegularFile)
+                        .filter((file) -> file.toString().endsWith(".json"))
+                        .forEach((file) ->
+                        {
+                            try
+                            {
+                                FileReader reader = new FileReader(file.toString());
+                                JsonObject content = new JsonParser().parse(reader).getAsJsonObject();
 
-            AddMethod(new StewBoostingMethod(skill));
-        }
+                                SerializableMethod serializedGoals = myPlugin.myGson.fromJson(content, SerializableMethod.class);
+
+                                Method.FromSerialized(serializedGoals, file.getParent().toString().substring(dir.length()))
+                                    .ifPresent(this::AddMethod);
+                            }
+                            catch (FileNotFoundException notFound)
+                            {
+                                TodoPlugin.IgnorableError("FileNotFoundException when trying to read " + file);
+                            }
+                            catch (JsonParseException ignored)
+                            {
+
+                            }
+                        });
+                }
+                catch (IOException ignored)
+                {
+                    TodoPlugin.IgnorableError("IOException when looking for methods in " + dir);
+                }
+            });
     }
 
-    private void LoadCapesOfAccomplishments()
+    public Stream<Method> GetAllMethods()
     {
+        return myMethods.stream();
+    }
+
+    public Stream<Method> GetAvailableMethods(String aId)
+    {
+        return GetAllMethods().filter((method) -> method.myMakes.GetSpecific(aId) > 0.f);
+    }
+
+    protected void AddMethod(Method aMethod)
+    {
+        myMethods.add(aMethod);
+
+        for(String resourceId : aMethod.myMakes.Ids())
         {
-            Method method = new Method("Buy Max Cape", "purchase/skillcapes");
+            myLookup.putIfAbsent(resourceId, new ArrayList<>());
+            List<Method> list = myLookup.get(resourceId);
 
-            method.takes(ItemID.COINS_995, 2277000);
-            method.makes(ItemID.MAX_CAPE);
-
-            for(Skill skill : Skill.values())
-                method.requires(skill, 99);
-
-            AddDefaultMethod(
-                            IdBuilder.itemId(ItemID.MAX_CAPE),
-                            method.build());
+            int index = Collections.binarySearch(list, aMethod, Comparator.comparing(Method::GetName));
+            if (index < 0)
+            {
+                index = -index - 1;
+            }
+            list.add(index, aMethod);
         }
-
-        {
-            Method method = new Method("Buy Quest Cape", "purchase/skillcapes");
-
-            method.takes(ItemID.COINS_995, 99000);
-            method.makes(ItemID.QUEST_POINT_CAPE);
-
-            for(Quest quest : Quest.values())
-                if (!Quests.MiniQuests.contains(quest))
-                    method.requires(quest);
-
-            AddDefaultMethod(IdBuilder.itemId(ItemID.QUEST_POINT_CAPE), method.build());
-        }
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.ATTACK_CAPE),
-            new Method("Buy Attack Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.ATTACK_CAPE)
-                .requires(Skill.ATTACK, 99)
-                .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.STRENGTH_CAPE),
-            new Method("Buy Strength Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.STRENGTH_CAPE)
-                .requires(Skill.STRENGTH, 99)
-                .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.DEFENCE_CAPE),
-            new Method("Buy Defence Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.DEFENCE_CAPE)
-                .requires(Skill.DEFENCE, 99)
-                .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.RANGING_CAPE),
-            new Method("Buy Ranging Cape", "purchase/skillcapes")
-                    .takes(ItemID.COINS_995, 99000)
-                    .makes(ItemID.RANGING_CAPE)
-                    .requires(Skill.RANGED, 99)
-                    .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.PRAYER_CAPE),
-            new Method("Buy Prayer Cape", "purchase/skillcapes")
-                    .takes(ItemID.COINS_995, 99000)
-                    .makes(ItemID.PRAYER_CAPE)
-                    .requires(Skill.PRAYER, 99)
-                    .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.MAGIC_CAPE),
-            new Method("Buy Magic Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.MAGIC_CAPE)
-                .requires(Skill.MAGIC, 99)
-                .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.RUNECRAFT_CAPE),
-            new Method("Buy Runecraft Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.RUNECRAFT_CAPE)
-                .requires(Skill.RUNECRAFT, 99)
-                .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.CONSTRUCT_CAPE),
-            new Method("Buy Construction Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.CONSTRUCT_CAPE)
-                .requires(Skill.CONSTRUCTION, 99)
-                .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.HITPOINTS_CAPE),
-            new Method("Buy Hitpoints Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.HITPOINTS_CAPE)
-                .requires(Skill.HITPOINTS, 99)
-                .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.AGILITY_CAPE),
-            new Method("Buy Agility Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.AGILITY_CAPE)
-                .requires(Skill.AGILITY, 99)
-                .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.HERBLORE_CAPE),
-            new Method("Buy Herblore Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.HERBLORE_CAPE)
-                .requires(Skill.HERBLORE, 99)
-                .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.THIEVING_CAPE),
-            new Method("Buy Thieving Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.THIEVING_CAPE)
-                .requires(Skill.THIEVING, 99)
-                .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.CRAFTING_CAPE),
-            new Method("Buy Crafting Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.CRAFTING_CAPE)
-                .requires(Skill.CRAFTING, 99)
-                .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.FLETCHING_CAPE),
-            new Method("Buy Fletching Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.FLETCHING_CAPE)
-                .requires(Skill.FLETCHING, 99)
-                .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.SLAYER_CAPE),
-            new Method("Buy Slayer Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.SLAYER_CAPE)
-                .requires(Skill.SLAYER, 99)
-                .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.HUNTER_CAPE),
-            new Method("Buy Hunter Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.HUNTER_CAPE)
-                .requires(Skill.HUNTER, 99)
-                .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.MINING_CAPE),
-            new Method("Buy Mining Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.MINING_CAPE)
-                .requires(Skill.MINING, 99)
-                .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.SMITHING_CAPE),
-            new Method("Buy Smithing Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.SMITHING_CAPE)
-                .requires(Skill.SMITHING, 99)
-                .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.FISHING_CAPE),
-            new Method("Buy Fishing Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.FISHING_CAPE)
-                .requires(Skill.FISHING, 99)
-                .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.COOKING_CAPE),
-            new Method("Buy Cooking Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.COOKING_CAPE)
-                .requires(Skill.COOKING, 99)
-                .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.FIREMAKING_CAPE),
-            new Method("Buy Firemaking Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.FIREMAKING_CAPE)
-                .requires(Skill.FIREMAKING, 99)
-                .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.WOODCUTTING_CAPE),
-            new Method("Buy Woodcutting Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.WOODCUTTING_CAPE)
-                .requires(Skill.WOODCUTTING, 99)
-                .build());
-
-        AddDefaultMethod(
-            IdBuilder.itemId(ItemID.FARMING_CAPE),
-            new Method("Buy Farming Cape", "purchase/skillcapes")
-                .takes(ItemID.COINS_995, 99000)
-                .makes(ItemID.FARMING_CAPE)
-                .requires(Skill.FARMING, 99)
-                .build());
-
     }
 
     private void LoadAllSkills()
@@ -1625,41 +1409,6 @@ public class MethodManager
 
     private void LoadSmithing()
     {
-        Map<String, Costs> barCosts = new HashMap<>();
-
-        barCosts.put("DAGGER", new Costs(1,1));
-        barCosts.put("AXE", new Costs(1,1));
-        barCosts.put("MACE", new Costs(1,1));
-        barCosts.put("MED_HELM", new Costs(1,1));
-        barCosts.put("BOLTS_UNF", new Costs(1,10));
-        barCosts.put("SWORD", new Costs(1,1));
-        barCosts.put("DART_TIP", new Costs(1,10));
-        barCosts.put("WIRE", new Costs(1,1));
-        barCosts.put("NAILS", new Costs(1,15));
-        barCosts.put("ARROWTIPS", new Costs(1,15));
-        barCosts.put("SCIMITAR", new Costs(2,1));
-        barCosts.put("HASTA", new Costs(1,1));
-        barCosts.put("SPEAR", new Costs(1,1));
-        barCosts.put("JAVELIN_HEADS", new Costs(1,5));
-        barCosts.put("LIMBS", new Costs(1,1));
-        barCosts.put("KNIFE", new Costs(1,5));
-        barCosts.put("FULL_HELM", new Costs(2,1));
-        barCosts.put("SQ_SHIELD", new Costs(2,1));
-        barCosts.put("WARHAMMER", new Costs(3,1));
-        barCosts.put("LONGSWORD", new Costs(2,1));
-        barCosts.put("BATTLEAXE", new Costs(3,1));
-        barCosts.put("CHAINBODY", new Costs(3,1));
-        barCosts.put("KITESHIELD", new Costs(3,1));
-        barCosts.put("CLAWS", new Costs(2,1));
-        barCosts.put("2H_SWORD", new Costs(3,1));
-        barCosts.put("PLATELEGS", new Costs(3,1));
-        barCosts.put("PLATESKIRT", new Costs(3,1));
-        barCosts.put("PLATEBODY", new Costs(5,1));
-        barCosts.put("SPIT", new Costs(1,1));
-        barCosts.put("STUDS", new Costs(1,1));
-        barCosts.put("GRAPPLE_TIP", new Costs(1,1));
-        barCosts.put("LANTERN_UNF", new Costs(1,1));
-        barCosts.put("LANTERN_FRAME", new Costs(1,1));
 
         Map<String, Integer> metals = new HashMap<>();
 
@@ -1684,49 +1433,6 @@ public class MethodManager
                 "DRAGON_SQ_SHIELD",
                 "DRAGONFIRE_SHIELD",
         };
-
-        for(SmithingAction action : SmithingAction.values())
-        {
-            if (Arrays.asList(ignored).contains(action.name()))
-            {
-                continue;
-            }
-
-            int del = action.name().indexOf("_");
-            if (del == -1)
-            {
-                TodoPlugin.debug("Weird action [" + action.name() + "]", 1);
-                continue;
-            }
-
-            String metal = action.name().substring(0, del);
-            String type = action.name().substring(del + 1);
-
-            if (type.equals("BAR"))
-                continue;
-
-            Costs costs = barCosts.get(type);
-            if (costs == null)
-            {
-                TodoPlugin.debug("Missing bar cost for " + action.name(), 1);
-                continue;
-            }
-
-            Integer barId = metals.get(metal);
-            if (barId == null)
-            {
-                TodoPlugin.debug("Missing bar type for " + action.name(), 1);
-                continue;
-            }
-
-            AddMethod(new Method("Smith " + action.getName(myPlugin.myItemManager), "smithing/items/" + metal.toLowerCase())
-                    .takes(barId, costs.myCost)
-                    .makes(Skill.SMITHING, action.getXp())
-                    .makes(action.getItemId(), costs.myResult)
-                    .requires(Alternative.HAMMER)
-                    .requires(Skill.SMITHING, action.getLevel()));
-        }
-
 
         class BarCraft
         {
@@ -1823,7 +1529,7 @@ public class MethodManager
                 Method method = new Method("Smelt " + myPlugin.myItemManager.getItemComposition(bar.myBarId).getMembersName() + " at blast furnace", "smithing/bars");
 
                 if (bar.myCoalAmount > 0)
-                    method.takes(ItemID.COAL, bar.myCoalAmount / 2);
+                    method.takes(ItemID.COAL, bar.myCoalAmount / 2.0);
 
                 AddMethod(method
                     .takes(bar.myOreId)

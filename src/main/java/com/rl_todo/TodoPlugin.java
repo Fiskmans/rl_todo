@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.inject.Provides;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.swing.*;
 
 import com.rl_todo.methods.MethodManager;
@@ -73,6 +74,10 @@ public class TodoPlugin extends Plugin
 	@Inject
 	public Gson myGson;
 
+	@Inject
+	@Named("developerMode")
+	boolean developerMode;
+
 	public static final File ROOT_DIRECTORY = new File(RUNELITE_DIR, "todo_plugin");
 	public static final String DATA_FILE = ROOT_DIRECTORY + File.separator + "goals.json";
 
@@ -93,10 +98,13 @@ public class TodoPlugin extends Plugin
 	{
 		if (myGlobalInstance != null && aLevel < myGlobalInstance.myConfig.debug())
 		{
-			myGlobalInstance.myClientThread.invokeLater(() ->
-			{
-				myGlobalInstance.myClient.addChatMessage(ChatMessageType.CONSOLE, LOG_TAG, aMessage.toString(), "Todo");
-			});
+			myGlobalInstance.myClientThread.invokeLater(
+				() -> myGlobalInstance.myClient.addChatMessage(
+					ChatMessageType.CONSOLE,
+					LOG_TAG,
+					aMessage.toString(),
+					"Todo"));
+
 			log.info(LOG_TAG + aMessage.toString());
 		}
 	}
@@ -105,9 +113,12 @@ public class TodoPlugin extends Plugin
 	public static void IgnorableError(Object aMessage)
 	{
 		myGlobalInstance.myClientThread.invokeLater(() ->
-		{
-			myGlobalInstance.myClient.addChatMessage(ChatMessageType.CONSOLE, LOG_TAG, aMessage.toString(), "Todo");
-		});
+			myGlobalInstance.myClient.addChatMessage(
+				ChatMessageType.CONSOLE,
+				LOG_TAG,
+				aMessage.toString(),
+				"Todo"));
+
 		log.info(LOG_TAG + aMessage.toString());
 	}
 
@@ -130,7 +141,6 @@ public class TodoPlugin extends Plugin
 		myGlobalInstance = this;
 		myUtilities = new Utilities(this);
 
-
 		myPanel = new TodoPanel(this);
 		myNavButton = NavigationButton.builder()
 				.tooltip("Todo")
@@ -152,10 +162,7 @@ public class TodoPlugin extends Plugin
 			myQuest = new Quests(this);
 			myMethodManager = new MethodManager(this);
 
-			SwingUtilities.invokeLater(()->
-			{
-				myClientToolbar.addNavigation(myNavButton);
-			});
+			SwingUtilities.invokeLater(() -> myClientToolbar.addNavigation(myNavButton));
 		});
 	}
 
@@ -166,10 +173,7 @@ public class TodoPlugin extends Plugin
 
 		myProgressManager.RemoveAllSources();
 
-		SwingUtilities.invokeLater(()->
-		{
-			myClientToolbar.removeNavigation(myNavButton);
-		});
+		SwingUtilities.invokeLater(()-> myClientToolbar.removeNavigation(myNavButton));
 
 		myQuest = null;
 		myNavButton = null;
@@ -224,8 +228,8 @@ public class TodoPlugin extends Plugin
 	{
 		switch (ev.getVarpId())
 		{
-			case 1059:
-			case 1060:
+			case 1059: // Current nmz points
+			case VarPlayer.NMZ_REWARD_POINTS:
 				mySources.RefreshNMZ(this);
 				break;
 		}
@@ -258,14 +262,6 @@ public class TodoPlugin extends Plugin
 
 		for (Map.Entry<Integer,Integer> entry : items.entrySet())
 			aSource.SetProgress(IdBuilder.itemId(entry.getKey()), entry.getValue());
-	}
-
-	@Subscribe
-	public void onConfigChanged(ConfigChanged event)
-	{
-		if (!event.getGroup().equals(CONFIG_GROUP))
-			return;
-
 	}
 
 	@Subscribe
@@ -316,7 +312,7 @@ public class TodoPlugin extends Plugin
 				catch (Exception aException)
 				{
 					IgnorableError("Failed to load goals from " + DATA_FILE);
-					IgnorableError(aException.getMessage());
+					IgnorableError(aException);
 				}
 
 				myWantsSave = false;
@@ -333,7 +329,11 @@ public class TodoPlugin extends Plugin
 	{
 		String content = myPanel.GetGoals().Serialize();
 
-		ROOT_DIRECTORY.mkdirs();
+		if (!ROOT_DIRECTORY.mkdirs())
+		{
+			IgnorableError("Failed to save goals to " + DATA_FILE);
+			return;
+		}
 
 		try
 		{

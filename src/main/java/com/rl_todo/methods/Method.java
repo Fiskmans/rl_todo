@@ -2,13 +2,13 @@ package com.rl_todo.methods;
 
 import com.rl_todo.*;
 import com.rl_todo.serialization.SerializableMethod;
+import com.rl_todo.serialization.SerializableRecursiveMethod;
 import net.runelite.api.Quest;
 import net.runelite.api.Skill;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 
 public class Method
@@ -19,42 +19,70 @@ public class Method
     public ResourcePool myMakes = new ResourcePool();
     public ResourcePool myRequires = new ResourcePool();
 
+    public String GetName()
+    {
+        return  myName;
+    }
+
     Method(String aName, String aCategory)
     {
         myName = aName;
         myCategory = aCategory;
     }
 
-    public static Method FromSerialized(SerializableMethod aSerialized, String aMainProduct)
+    public static Method FromSerialized(SerializableRecursiveMethod aSerialized, String aMainProduct)
     {
         Method method = new Method(aSerialized.name, "from_saved");
 
         if (aSerialized.requires != null)
-            for (Map.Entry<String, SerializableMethod> kvPair : aSerialized.requires.entrySet())
+            for (Map.Entry<String, SerializableRecursiveMethod> kvPair : aSerialized.requires.entrySet())
                 method.myRequires.Add(kvPair.getKey(), kvPair.getValue().per_craft);
 
         if (aSerialized.takes != null)
-            for (Map.Entry<String, SerializableMethod> kvPair : aSerialized.takes.entrySet())
+            for (Map.Entry<String, SerializableRecursiveMethod> kvPair : aSerialized.takes.entrySet())
                 method.myTakes.Add(kvPair.getKey(), kvPair.getValue().per_craft);
 
-        aSerialized.byproducts.forEach((key, value) -> method.myMakes.Add(key, value));
+        if (aSerialized.byproducts != null)
+            aSerialized.byproducts.forEach((key, value) -> method.myMakes.Add(key, value));
+
         method.myMakes.Add(aMainProduct, aSerialized.per_craft);
 
         return method;
     }
 
-    public SerializableMethod SerializeSparse(String aMainProduct)
+    public static Optional<Method> FromSerialized(SerializableMethod aSerialized, String aCategory)
+    {
+        if (aSerialized.name == null)
+            return Optional.empty();
+
+        if (aSerialized.makes == null)
+            return Optional.empty();
+
+        Method out = new Method(aSerialized.name, aCategory);
+
+        aSerialized.makes.forEach((key, value) -> out.myMakes.Add(new Resource(key, value)));
+
+        if (aSerialized.takes != null)
+            aSerialized.takes.forEach((key, value) -> out.myTakes.Add(new Resource(key, value)));
+
+        if (aSerialized.requires != null)
+            aSerialized.requires.forEach((key, value) -> out.myRequires.Add(new Resource(key, value)));
+
+        return Optional.of(out);
+    }
+
+    public SerializableRecursiveMethod SerializeSparse(String aMainProduct)
     {
         assert myMakes.GetSpecific(aMainProduct) > 0.f;
 
-        SerializableMethod out = new SerializableMethod();
+        SerializableRecursiveMethod out = new SerializableRecursiveMethod();
 
         out.per_craft = myMakes.GetSpecific(aMainProduct);
 
         return out;
     }
 
-    public void SerializeInto(SerializableMethod aSparseMethod, String aMainProduct)
+    public void SerializeInto(SerializableRecursiveMethod aSparseMethod, String aMainProduct)
     {
         aSparseMethod.name = myName;
 
@@ -66,10 +94,10 @@ public class Method
         });
 
         aSparseMethod.requires = new HashMap<>();
-        myRequires.All().forEach((kvPair) -> aSparseMethod.requires.put(kvPair.getKey(), new SerializableMethod(kvPair.getValue())));
+        myRequires.All().forEach((kvPair) -> aSparseMethod.requires.put(kvPair.getKey(), new SerializableRecursiveMethod(kvPair.getValue())));
 
         aSparseMethod.takes = new HashMap<>();
-        myTakes.All().forEach((kvPair) -> aSparseMethod.takes.put(kvPair.getKey(), new SerializableMethod(kvPair.getValue())));
+        myTakes.All().forEach((kvPair) -> aSparseMethod.takes.put(kvPair.getKey(), new SerializableRecursiveMethod(kvPair.getValue())));
 
         if (aSparseMethod.takes.isEmpty())
             aSparseMethod.takes = null;

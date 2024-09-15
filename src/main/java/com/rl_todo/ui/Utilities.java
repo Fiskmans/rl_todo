@@ -8,6 +8,7 @@ import net.runelite.api.SpriteID;
 import net.runelite.client.util.AsyncBufferedImage;
 import net.runelite.client.util.ImageUtil;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Optional;
 
@@ -57,8 +58,15 @@ public class Utilities {
                 return Optional.of(part.substring(0,1).toUpperCase() + part.substring(1).toLowerCase() + " xp");
             case "level":
                 return Optional.of(part.substring(0,1).toUpperCase() + part.substring(1).toLowerCase() + " level");
-            case "nmz":
-                return Optional.of("NMZ points");
+            case "minigame":
+            {
+                switch (part)
+                {
+                    case "nmz_points":
+                        return Optional.of("NMZ points");
+                }
+            }
+
             case "any":
                 return Alternative
                         .FromID(part)
@@ -119,11 +127,24 @@ public class Utilities {
             case "xp":
             case "level":
                 return ImageUtil.loadImageResource(myPlugin.myClient.getClass(), "/skill_icons/" + part.toLowerCase() + ".png");
-            case "nmz":
+            case "minigame":
                 return  myPlugin.mySpriteManager.getSprite(SpriteID.TAB_QUESTS_RED_MINIGAMES, 0);
 
             default:
                 return myErrorImage;
         }
+    }
+
+    static public Color BlendColors(Color aLeft, Color aRight)
+    {
+        return BlendColors(aLeft, aRight, 0.5f);
+    }
+
+    static public Color BlendColors(Color aLeft, Color aRight, Float aFraction)
+    {
+        return new Color(
+                (aLeft.getRed() * (1.f - aFraction) + aRight.getRed() * aFraction) / 255.f,
+                (aLeft.getGreen() * (1.f - aFraction) + aRight.getGreen() * aFraction) / 255.f,
+                (aLeft.getBlue() * (1.f - aFraction) + aRight.getBlue() * aFraction) / 255.f);
     }
 }

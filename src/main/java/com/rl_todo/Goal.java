@@ -2,7 +2,7 @@ package com.rl_todo;
 
 import com.rl_todo.methods.Method;
 import com.rl_todo.serialization.SerializableGoal;
-import com.rl_todo.serialization.SerializableMethod;
+import com.rl_todo.serialization.SerializableRecursiveMethod;
 import net.runelite.api.ChatMessageType;
 
 import java.util.*;
@@ -12,7 +12,7 @@ public class Goal implements ProgressTracker
 {
     protected TodoPlugin myPlugin;
     final private String myId;
-    public String GetId() { return myId; };
+    public String GetId() { return myId; }
     final private boolean myIsRoot;
 
     private final List<GoalSubscriber> mySubscribers;
@@ -66,12 +66,36 @@ public class Goal implements ProgressTracker
         Setup();
     }
 
-    private void SetChildMethodFromSerialized(SerializableMethod aSerializedMethod)
+    private void SetChildMethodFromSerialized(SerializableRecursiveMethod aSerializedMethod)
     {
         assert !myChildren.isEmpty();
         assert HasMethod();
 
-        
+        for (Goal child : myChildren) {
+
+            SerializableRecursiveMethod childMethod;
+
+            if (aSerializedMethod.takes != null && aSerializedMethod.takes.containsKey(child.myId))
+            {
+                childMethod = aSerializedMethod.takes.get(child.myId);
+            }
+            else
+            {
+                assert aSerializedMethod.requires != null;
+                assert aSerializedMethod.requires.containsKey(child.myId);
+
+                childMethod = aSerializedMethod.requires.get(child.myId);
+            }
+
+            assert childMethod != null;
+
+
+            if (childMethod.IsFullMethod())
+            {
+                child.SetMethod(Method.FromSerialized(childMethod, child.myId));
+                child.SetChildMethodFromSerialized(childMethod);
+            }
+        }
     }
 
     public static Goal FromSerialized(TodoPlugin aPlugin, SerializableGoal aSerialized)
@@ -80,7 +104,7 @@ public class Goal implements ProgressTracker
 
         Goal out = new Goal(aPlugin, aSerialized.id, aSerialized.target, true, null);
 
-        if (aSerialized.from != null && aSerialized.from.IsValid())
+        if (aSerialized.from != null && aSerialized.from.IsFullMethod())
         {
             out.SetMethod(Method.FromSerialized(aSerialized.from, out.myId));
             out.SetChildMethodFromSerialized(aSerialized.from);
@@ -89,7 +113,7 @@ public class Goal implements ProgressTracker
         return out;
     }
 
-    public void FillInMethod(SerializableMethod aMethod)
+    public void FillInMethod(SerializableRecursiveMethod aMethod)
     {
         if (!HasMethod())
             return;
@@ -109,13 +133,11 @@ public class Goal implements ProgressTracker
         if (aMethod.requires != null)
         {
             aMethod.requires.forEach((id, subMethod) ->
-            {
                 myChildren.forEach((child) ->
                 {
                     if (child.myId.equals(id))
                         child.FillInMethod(subMethod);
-                });
-            });
+                }));
         }
     }
 
@@ -156,26 +178,39 @@ public class Goal implements ProgressTracker
         return Integer.MAX_VALUE;
     }
 
-    public boolean SetTarget(int aValue)
+    public void SetTarget(int aValue)
     {
+        int value = aValue;
         if (aValue == myTarget)
-            return true;
+            return;
 
-        if (aValue > MaxTarget())
-            return  false;
+        if (value > MaxTarget())
+            value = MaxTarget();
 
-        myTarget = aValue;
+        if (value < 1)
+            value = 1;
+
+        myTarget = value;
         RecalculateBanked();
 
-        mySubscribers.forEach(GoalSubscriber::OnTargetChanged);
+        if (HasMethod())
+        {
+            ResourcePool targets = myMethod.CalculateNeeded(myPlugin, myId, myTarget);
+            for (Goal child : myChildren) {
+                int target = (int)Math.ceil(targets.GetSpecific(child.myId));
+                child.SetTarget(target);
+            }
+        }
 
-        return false;
+        mySubscribers.forEach(GoalSubscriber::OnTargetChanged);
     }
 
     private void Setup()
     {
         RecalculateProgress();
         RecalculateBanked();
+
+        myPlugin.myProgressManager.AddTracker(this, myId);
     }
 
     public void UnsetMethod()
@@ -259,7 +294,7 @@ public class Goal implements ProgressTracker
             myProgress = clamped;
             CheckCompletion();
 
-            TodoPlugin.debug("Progress on " + toString(), 1);
+            TodoPlugin.debug("Progress on " + this, 1);
 
             mySubscribers.forEach(GoalSubscriber::OnProgressChanged);
         }
@@ -296,20 +331,6 @@ public class Goal implements ProgressTracker
             myBanked = banked;
             mySubscribers.forEach(GoalSubscriber::OnBankedChanged);
         }
-    }
-
-    public void Serialize(List<String> aOutput)
-    {
-        String indent = "";
-
-        aOutput.add(indent + "{");
-        aOutput.add(indent + " id " + myId);
-
-        if (myTarget != 1)
-        {
-            aOutput.add(indent + " target " + myTarget);
-        }
-        aOutput.add(indent + "}");
     }
 
     @Override

@@ -23,7 +23,9 @@ public class ProgressSourceStatusIcon extends JPanel implements ProgressSourceSt
         myPlugin = aPlugin;
         mySource = aSource;
 
+        setMaximumSize(SIZE);
         setPreferredSize(SIZE);
+        setMinimumSize(SIZE);
 
         myIcon = aIcon;
 

@@ -5,7 +5,7 @@ public class SerializableGoal
     public String id;
     public int target;
 
-    public SerializableMethod from;
+    public SerializableRecursiveMethod from;
 
     public boolean IsValid()
     {
