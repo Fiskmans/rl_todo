@@ -12,10 +12,12 @@ import java.awt.event.ActionEvent;
 public class AddGoalPanel extends JPanel
 {
     private TodoPlugin myPlugin;
+    GoalPanel myOwner;
 
-    public AddGoalPanel(TodoPlugin aPlugin)
+    public AddGoalPanel(TodoPlugin aPlugin, GoalPanel aOwner)
     {
         myPlugin = aPlugin;
+        myOwner = aOwner;
 
         setLayout(new GridBagLayout());
 
@@ -48,7 +50,7 @@ public class AddGoalPanel extends JPanel
 
                     SwingUtilities.invokeLater(() ->
                     {
-                        new Goal(null, myPlugin, id, 1, true);
+                        myOwner.myGoals.AddGoal(new Goal(myPlugin, id, 1, true,null));
                     });
                 })
                 .build();

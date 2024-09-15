@@ -2,7 +2,9 @@ package com.rl_todo.methods;
 
 import com.rl_todo.IdBuilder;
 import com.rl_todo.Resource;
+import com.rl_todo.ResourcePool;
 import com.rl_todo.TodoPlugin;
+import net.runelite.api.Client;
 import net.runelite.api.Skill;
 
 import java.util.ArrayList;
@@ -24,61 +26,58 @@ public class LevelMethod extends Method
             /*80*/  1986068,    2192818,    2421087,    2673114,    2951373,    3258594,    3597792,    3972294,    4385776,    4842295,
             /*90*/  5346332,    5902831,    6517253,    7195629,    7944614,    8771558,    9684577,    10692629,   11805606,   13034431};
 
+    Client myClient;
     Skill mySkill;
     String myXpTag;
     String myLevelTag;
 
-    public LevelMethod(Skill aSkill)
+    public LevelMethod(Client aClient, Skill aSkill)
     {
         super(("Level up " + aSkill.getName()), "level");
 
-        myMakes.add(new Resource(IdBuilder.levelId(aSkill), 1));
-        myTakes.add(new Resource(IdBuilder.xpId(aSkill), 1));
+        myRequires.Add(IdBuilder.levelId(aSkill), 1);
 
+        myMakes.Add(IdBuilder.levelId(aSkill), 1);
+        myTakes.Add(IdBuilder.xpId(aSkill), 1);
+
+        myClient = aClient;
         mySkill = aSkill;
         myLevelTag = IdBuilder.levelId(aSkill);
         myXpTag = IdBuilder.xpId(aSkill);
     }
 
     @Override
-    public List<Resource> Calculate(TodoPlugin aPlugin, String aId, int aTarget)
+    public ResourcePool CalculateNeeded(TodoPlugin aPlugin, String aId, int aTarget)
     {
         assert aId.equals(myLevelTag);
         assert aTarget > 0;
         assert aTarget <= 99;
 
-        List<Resource> out = new ArrayList<>();
-        out.add(new Resource(myXpTag, XP_LOOKUP[aTarget]));
+        ResourcePool out = new ResourcePool();
+        out.Add(new Resource(myXpTag, XP_LOOKUP[aTarget]));
 
         return out;
     }
 
     @Override
-    public int CalculateAvailable(TodoPlugin aPlugin, List<Resource> aAvailableIngredients, String aId, int aMaximum)
+    public ResourcePool CalculateAvailable(ResourcePool aAvailableResources, String aId, float aWanted)
     {
-        int baseXp = aPlugin.myProgressManager.GetProgress(IdBuilder.xpId(mySkill));
-        int baseLevel = 0;
-        for(; baseLevel < 99; baseLevel++)
-        {
-            if (baseXp < XP_LOOKUP[baseLevel])
-                break;
+        int baseLevel = myClient.getRealSkillLevel(mySkill);
 
-        }
-
-        int bankedXp = baseXp;
-        for (Resource r : aAvailableIngredients)
-        {
-            if (r.myId.equals(IdBuilder.xpId(mySkill)))
-                bankedXp += r.myAmount;
-        }
+        int bankedXp = (int)Math.floor(aAvailableResources.GetSpecific(IdBuilder.xpId(mySkill)));
 
         int bankedLevel = baseLevel;
         for(; bankedLevel < 99; bankedLevel++)
         {
             if (bankedXp < XP_LOOKUP[bankedLevel])
                 break;
-
         }
-        return Math.min(bankedLevel - baseLevel, aMaximum);
+
+        ResourcePool out = new ResourcePool();
+
+        out.Add(IdBuilder.levelId(mySkill), Math.min(bankedLevel - baseLevel, (int)Math.ceil(aWanted)));
+
+        return out;
     }
+
 }

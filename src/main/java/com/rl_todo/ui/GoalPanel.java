@@ -1,42 +1,45 @@
 package com.rl_todo.ui;
 
-import com.rl_todo.GoalCollection;
 import com.rl_todo.TodoPlugin;
 import net.runelite.api.ItemID;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 
 import static net.runelite.api.SpriteID.*;
 
 public class GoalPanel extends JPanel
 {
-    public GoalCollection myGoals;
+    public GoalCollectionPanel myGoals;
     TodoPlugin myPlugin;
 
     public GoalPanel(TodoPlugin aPlugin)
     {
         super();
         myPlugin = aPlugin;
-        myGoals = new GoalCollection(myPlugin);
+        myGoals = new GoalCollectionPanel(myPlugin);
 
-        setLayout(new GridBagLayout());
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
-        GridBagConstraints constraints = new GridBagConstraints();
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.weightx = 1;
-        constraints.gridx = 0;
-        constraints.gridy = 0;
-
-
-        JButton addGoal = new JButton("Add Goal");
-        addGoal.addActionListener(e -> {
+        JButton addGoalButton = new JButton("Add Goal");
+        addGoalButton.addActionListener(e -> {
             TodoPlugin.debug("Switched to add goal panel", 3);
-            myPlugin.myPanel.SetContent(new AddGoalPanel(myPlugin));
+            myPlugin.myPanel.SetContent(new AddGoalPanel(myPlugin, this));
         });
 
-        add(addGoal, constraints);
+        addGoalButton.setAlignmentX(0.0f);
+
+        add(addGoalButton);
+
+        JButton allMethods = new JButton("View all methods");
+        allMethods.addActionListener(e -> {
+            TodoPlugin.debug("Switched to add view methods", 3);
+            myPlugin.myPanel.SetContent(new MethodSelectorPanel(myPlugin, null));
+        });
+
+        allMethods.setAlignmentX(0.0f);
+
+        add(allMethods);
 
         JPanel statusPanel = new JPanel();
         statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
@@ -62,16 +65,9 @@ public class GoalPanel extends JPanel
             });
         });
 
+        add(statusPanel);
 
-        constraints.fill = GridBagConstraints.NONE;
-        constraints.gridy = 2;
-        add(statusPanel, constraints);
-
-
-        constraints.fill = GridBagConstraints.BOTH;
-        constraints.weighty = 1;
-        constraints.gridy = 3;
-        add(new JScrollPane(myGoals, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), constraints);
+        add(new JScrollPane(myGoals, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
     }
 
 }

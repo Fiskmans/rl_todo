@@ -4,7 +4,7 @@ import java.awt.*;
 
 public class DrawingUtils
 {
-    static void DrawText(TodoPlugin aPlugin, Graphics g, String aText, int aX, int aY, boolean aRightAlign, boolean aTopAlign)
+    public static void DrawText(TodoPlugin aPlugin, Graphics g, String aText, int aX, int aY, boolean aRightAlign, boolean aTopAlign)
     {
 
         char[] chars = new char[aText.length()];

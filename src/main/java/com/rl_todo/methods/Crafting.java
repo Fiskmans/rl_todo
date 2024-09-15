@@ -835,18 +835,6 @@ public class Crafting
                     .build());
         }
 
-        aManager.AddDefaultMethod(IdBuilder.itemId(ItemID.UNCUT_ZENYTE), new Method("Fuse Zenyte shard and Onyx at wall of flame", "crafting/misc")
-            .takes(ItemID.ZENYTE_SHARD)
-            .takes(ItemID.ONYX)
-
-            .makes(Skill.CRAFTING, 1500)
-            .makes(ItemID.UNCUT_ZENYTE)
-
-            .requires(Skill.CRAFTING, 70)
-            .requires(Quest.MONKEY_MADNESS_II)
-            .requires(ItemID.ZOMBIE_MONKEY_GREEGREE_4030)
-            .build());
-
         // glass smelting
         {
             aManager.AddMethod(new Method("Smelt glass", "crafting/glass")
