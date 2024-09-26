@@ -107,7 +107,12 @@ public class GoalPopup extends JPopupMenu
     void Setup()
     {
         TodoPlugin.debug("Switched to method selector for " + myGoal, 3);
-        myPlugin.myPanel.SetContent(new MethodSelectorPanel(myPlugin, myGoal));
+        myPlugin.myPanel.SetContent(
+                new JScrollPane(
+                        new MethodSelectorPanel(myPlugin, myGoal.GetId())
+                                .OnSelect((method) -> myGoal.SetMethod(method)),
+                        ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED));
     }
 
     void Delete()

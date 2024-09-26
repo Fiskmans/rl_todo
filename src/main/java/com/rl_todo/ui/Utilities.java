@@ -77,6 +77,60 @@ public class Utilities {
         }
     }
 
+    public Optional<String> PrettifyIDCompact(String aRawId)
+    {
+        int index =  aRawId.indexOf('.');
+        if (index == -1)
+            return Optional.empty();
+
+        String type = aRawId.substring(0, index);
+        String part = aRawId.substring(index + 1);
+        switch (type)
+        {
+            case "item":
+                try
+                {
+                    int itemId = Integer.parseInt(part);
+
+                    ItemComposition itemComposition = myPlugin.myItemManager.getItemComposition(itemId);
+                    return Optional.of(itemComposition.getMembersName());
+                }
+                catch (final NumberFormatException ignored)
+                {
+                    return Optional.empty();
+                }
+            case "quest":
+                for(Quest q : Quest.values())
+                {
+                    if (Integer.toString(q.getId()).equals(part))
+                    {
+                        return Optional.of(q.getName());
+                    }
+                }
+                return Optional.empty();
+            case "xp":
+                return Optional.of("xp");
+            case "level":
+                return Optional.of("");
+            case "minigame":
+            {
+                switch (part)
+                {
+                    case "nmz_points":
+                        return Optional.of("NMZ points");
+                }
+            }
+
+            case "any":
+                return Alternative
+                        .FromID(part)
+                        .map(Alternative::getName);
+
+            default:
+                return Optional.empty();
+        }
+    }
+
     public static String PrettyNumber(int aNumber)
     {
         if (aNumber > 1000000)
@@ -86,6 +140,20 @@ public class Utilities {
             return String.format("%.2fk", (float) aNumber / 1000);
 
         return Integer.toString(aNumber);
+    }
+
+    public static String PrettyNumber(float aNumber)
+    {
+        if (aNumber > 1000000)
+            return String.format("%.2fm", aNumber / 1000000);
+
+        if (aNumber > 1000)
+            return String.format("%.2fk", aNumber / 1000);
+
+        if (aNumber == (long)aNumber)
+            return String.format("%d", (long) aNumber);
+
+        return Float.toString(aNumber);
     }
 
     public Optional<String> ProgressText(int aProgress, int aTarget)

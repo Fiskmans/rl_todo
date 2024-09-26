@@ -155,11 +155,11 @@ public class GoalUI extends JPanel implements GoalSubscriber {
         g.setColor(myPlugin.myConfig.treeColor());
         g.drawRect(0,0,IconSize - 1, IconSize - 1);
 
-        DrawingUtils.DrawText(myPlugin, g, myPrettyId, IconSize + 3, 2, false, true);
+        DrawingUtils.DrawText(myPlugin, g, myPrettyId, IconSize + 3, 2, false, true, null);
 
         myPlugin.myUtilities.ProgressText(myGoal.GetProgress(), myGoal.GetTarget())
             .ifPresent((progressText) ->
-                DrawingUtils.DrawText(myPlugin, g, progressText, getWidth() - 2, getHeight() - 2, true, false));
+                DrawingUtils.DrawText(myPlugin, g, progressText, getWidth() - 2, getHeight() - 2, true, false, null));
     }
 
 }

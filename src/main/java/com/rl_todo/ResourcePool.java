@@ -10,6 +10,11 @@ public class ResourcePool {
 
     private final HashMap<String, Float> myResources = new HashMap<>();
 
+    public boolean IsEmpty()
+    {
+        return myResources.isEmpty();
+    }
+
     public void Add(String aId, float aAmount)
     {
         myResources.put(aId, myResources.getOrDefault(aId, 0.f) + aAmount);

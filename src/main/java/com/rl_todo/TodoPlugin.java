@@ -18,7 +18,6 @@ import net.runelite.api.events.*;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
-import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.SpriteManager;
 import net.runelite.client.game.chatbox.ChatboxItemSearch;
@@ -136,7 +135,7 @@ public class TodoPlugin extends Plugin
 
 		TreeBranch.Indent = 10;
 		TreeBranch.ArcRadius = 3;
-		TreeBranch.myNormalCoplor = myConfig.treeColor();
+		TreeBranch.myNormalColor = myConfig.treeColor();
 
 		myGlobalInstance = this;
 		myUtilities = new Utilities(this);
@@ -314,6 +313,8 @@ public class TodoPlugin extends Plugin
 					IgnorableError("Failed to load goals from " + DATA_FILE);
 					IgnorableError(aException);
 				}
+				
+
 
 				myWantsSave = false;
 			});
@@ -329,10 +330,9 @@ public class TodoPlugin extends Plugin
 	{
 		String content = myPanel.GetGoals().Serialize();
 
-		if (!ROOT_DIRECTORY.mkdirs())
+		if (ROOT_DIRECTORY.mkdirs())
 		{
-			IgnorableError("Failed to save goals to " + DATA_FILE);
-			return;
+			debug("Created save directory", 1);
 		}
 
 		try

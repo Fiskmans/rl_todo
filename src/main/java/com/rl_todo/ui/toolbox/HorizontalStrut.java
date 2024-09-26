@@ -1,4 +1,4 @@
-package com.rl_todo.ui;
+package com.rl_todo.ui.toolbox;
 
 import javax.swing.*;
 import java.awt.*;

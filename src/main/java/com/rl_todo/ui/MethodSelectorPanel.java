@@ -10,75 +10,143 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import java.awt.*;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class MethodSelectorPanel extends JPanel
 {
     TodoPlugin myPlugin;
-    Goal myTarget;
+    JPanel myInnerPanel = new JPanel();
+
+    Consumer<Method> myOnSelected;
 
     HashMap<String, MethodCategory> myRootCategories = new HashMap<>();
 
-    MethodSelectorPanel(TodoPlugin aPlugin, Goal aTarget)
+    MethodSelectorPanel(TodoPlugin aPlugin, String aFilterByProduct)
     {
         myPlugin = aPlugin;
-        myTarget = aTarget;
 
-        if (aTarget != null)
+        if (aFilterByProduct != null)
         {
-            myPlugin.myMethodManager.GetAvailableMethods(myTarget.GetId()).forEach(this::AddOption);
+            myPlugin.myMethodManager.GetAvailableMethods(aFilterByProduct).forEach(this::AddOption);
         }
         else
         {
             myPlugin.myMethodManager.GetAllMethods().forEach(this::AddOption);
         }
 
-        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-        setBorder(new CompoundBorder(new LineBorder(Color.gray, 1), new EmptyBorder(2,2,2,2)));
-        setPreferredSize(new Dimension(220,500));
+        setLayout(new BorderLayout());
+
+        myInnerPanel.setLayout(new BoxLayout(myInnerPanel, BoxLayout.PAGE_AXIS));
+        myInnerPanel.setBorder(new CompoundBorder(new LineBorder(Color.gray, 1), new EmptyBorder(2,2,2,2)));
+
+        JScrollPane scrollPane = new JScrollPane(myInnerPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setAlignmentY(TOP_ALIGNMENT);
+        scrollPane.setAlignmentX(LEFT_ALIGNMENT);
+
+        setBackground(Color.RED);
+
+        setMinimumSize(new Dimension(220, 40));
+        setPreferredSize(new Dimension(220, 40));
+        setMaximumSize(new Dimension(220, 4000));
+
+        add(scrollPane, BorderLayout.CENTER);
+    }
+
+    public MethodSelectorPanel OnSelect(Consumer<Method> aOnSelect)
+    {
+        myOnSelected = aOnSelect;
+        return this;
     }
 
     void AddOption(Method aMethod)
     {
-        String[] parts = aMethod.myCategory.split("[/\\\\]");
 
-        if (parts.length == 0)
+        List<String> parts = Arrays.stream(aMethod.myCategory.split("[/\\\\]")).filter((s) -> !s.equals("")).collect(Collectors.toList());
+
+        if (parts.size() == 0)
         {
             //TODO: put them in the root? 'uncategorised'? idk, figure it out
             return;
         }
 
-
-        MethodCategory at = null;
-
-        for (String key : parts)
+        SwingUtilities.invokeLater(() ->
         {
-            if (at == null)
-            {
-                if (!myRootCategories.containsKey(parts[0]))
-                {
-                    at = new MethodCategory(parts[0]);
-                    myRootCategories.put(parts[0], at);
+            MethodCategory at = null;
 
-                    at.setAlignmentX(LEFT_ALIGNMENT);
-                    at.setAlignmentY(TOP_ALIGNMENT);
-                    add(at);
-                }
-                else
+            for (String key : parts)
+            {
+                if (at == null)
                 {
-                    at = myRootCategories.get(key);
+                    if (!myRootCategories.containsKey(key))
+                    {
+                        at = new MethodCategory(myPlugin, key);
+                        myRootCategories.put(key, at);
+
+                        at.setAlignmentX(LEFT_ALIGNMENT);
+                        at.setAlignmentY(TOP_ALIGNMENT);
+                        myInnerPanel.add(at);
+                    }
+                    else
+                    {
+                        at = myRootCategories.get(key);
+                    }
+                    continue;
                 }
-                continue;
+
+                at = at.GetOrCreateChild(key);
             }
 
-            at = at.GetOrCreateChild(key);
-        }
+            SelectableMethod selector = new SelectableMethod(myPlugin, aMethod, () ->
+            {
+                if (myOnSelected != null)
+                {
+                    myOnSelected.accept(aMethod);
+                    myPlugin.myPanel.ResetContent();
+                }
+            });
 
-        at.AddNode(new SelectableMethod(aMethod, () ->
-        {
-            if (myTarget != null)
-                myTarget.SetMethod(aMethod);
-        }));
+            MethodSelectorPanel invoker = this;
+
+            selector.addMouseListener(new MouseListener() {
+
+                MethodViewerPopup popup;
+
+                @Override
+                public void mouseClicked(MouseEvent e) {}
+
+                @Override
+                public void mousePressed(MouseEvent e) {}
+
+                @Override
+                public void mouseReleased(MouseEvent e) {}
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+
+                    int x = -10;
+                    int y = SwingUtilities.convertPoint(selector, 0, 0, invoker).y;
+
+                    popup = new MethodViewerPopup(myPlugin, aMethod, invoker,  x, y);
+                    popup.setVisible(true);
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    popup.setVisible(false);
+                    popup = null;
+                }
+            });
+
+            at.AddNode(selector);
+
+            repaint();
+        });
     }
 }

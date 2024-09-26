@@ -1,5 +1,7 @@
 package com.rl_todo.ui;
 
+import com.rl_todo.DrawingUtils;
+import com.rl_todo.TodoPlugin;
 import com.rl_todo.ui.toolbox.TreeBranch;
 import com.rl_todo.ui.toolbox.TreeNode;
 import com.rl_todo.ui.toolbox.TreeNodeItem;
@@ -11,15 +13,19 @@ import java.util.HashMap;
 public class MethodCategory extends TreeNode implements TreeNodeItem
 {
     HashMap<String, MethodCategory> myChildren = new HashMap<>();
+    TodoPlugin myPlugin;
+    String myText;
 
-    public MethodCategory(String aText)
+    public MethodCategory(TodoPlugin aPlugin, String aText)
     {
-        super(new JPanel());
+        super(new Selectable(aPlugin, aText, null));
 
-        myContent.setAlignmentY(TOP_ALIGNMENT);
-        myContent.setAlignmentX(RIGHT_ALIGNMENT);
-        myContent.add(new JLabel(aText));
-        myContent.setPreferredSize(new Dimension(10, 18));
+        ((Selectable)myContent).SetOnSelection(() -> {
+            this.Toggle();
+        });
+
+        myPlugin = aPlugin;
+        myText = aText;
     }
 
     MethodCategory GetOrCreateChild(String aKey)
@@ -27,7 +33,7 @@ public class MethodCategory extends TreeNode implements TreeNodeItem
         if (myChildren.containsKey(aKey))
             return myChildren.get(aKey);
 
-        MethodCategory created = new MethodCategory(aKey);
+        MethodCategory created = new MethodCategory(myPlugin, aKey);
         myChildren.put(aKey, created);
 
         created.setAlignmentX(RIGHT_ALIGNMENT);

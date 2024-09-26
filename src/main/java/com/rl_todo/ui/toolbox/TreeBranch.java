@@ -1,9 +1,5 @@
 package com.rl_todo.ui.toolbox;
 
-import com.rl_todo.TodoPlugin;
-import com.rl_todo.ui.HorizontalStrut;
-import sun.util.resources.cldr.ext.TimeZoneNames_fr_GF;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseEvent;
@@ -17,7 +13,7 @@ public class TreeBranch extends JPanel {
 
     boolean myIsHovered = false;
     public static Color myHoverColor = Color.LIGHT_GRAY;
-    public static Color myNormalCoplor = Color.white;
+    public static Color myNormalColor = Color.white;
 
     public static int Indent = 20;
     public static int ArcRadius = 5;
@@ -90,11 +86,10 @@ public class TreeBranch extends JPanel {
         if (myIsHovered)
             g.setColor(myHoverColor);
         else
-            g.setColor(myNormalCoplor);
+            g.setColor(myNormalColor);
 
         for(Component child : myNodePanel.getComponents())
         {
-            JComponent asComponent = (JComponent)child;
             TreeNodeItem asItem = (TreeNodeItem)child;
 
             Point target = SwingUtilities.convertPoint(child,0, asItem.GetAnchorDepth(), this);
@@ -104,12 +99,17 @@ public class TreeBranch extends JPanel {
 
             g.drawLine(at.x, at.y, next.x, next.y);
 
-            g.drawLine(next.x, next.y, startOfBranch.x, startOfBranch.y);
-            //g.drawArc(next.x, next.y, ArcRadius, ArcRadius, 90, 180);
+            if (ArcRadius < 10)
+                g.drawLine(next.x, next.y, startOfBranch.x, startOfBranch.y);
+            else
+                g.drawArc(next.x, next.y, ArcRadius, ArcRadius, 90, 180);
 
             g.drawLine(startOfBranch.x, startOfBranch.y, target.x, target.y);
 
             at = next;
         }
+
+        //g.setColor(Color.RED);
+        //g.drawRect(0,0, getWidth() - 1, getHeight() - 1);
     }
 }

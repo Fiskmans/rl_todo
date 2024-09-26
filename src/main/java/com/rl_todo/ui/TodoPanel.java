@@ -13,9 +13,9 @@ public class TodoPanel extends PluginPanel
     private final JLabel myTodoHeader = new JLabel("Todo");
     private  final JButton myBackButton = new JButton("Back");
 
-    private Component myContent;
+    private JPanel myContentArea;
     private Component myStashedContent;
-    private GoalPanel myDefaultContent;
+    private GoalViewPanel myDefaultContent;
     private TodoPlugin myPlugin;
 
     public GoalCollectionPanel GetGoals()
@@ -28,61 +28,61 @@ public class TodoPanel extends PluginPanel
         super(false);
 
         myPlugin = aPlugin;
-        myDefaultContent = new GoalPanel(myPlugin);
+        myDefaultContent = new GoalViewPanel(myPlugin);
         myStashedContent = myDefaultContent;
 
         setBorder(new EmptyBorder(3, 4, 3, 3));
         setLayout(new GridBagLayout());
 
-        final GridBagConstraints constraint = new GridBagConstraints();
-        constraint.fill = GridBagConstraints.HORIZONTAL;
-        constraint.weightx = 1;
-        constraint.gridx = 0;
-        constraint.gridy = 0;
+        final GridBagConstraints headerContraints = new GridBagConstraints();
+        headerContraints.fill = GridBagConstraints.HORIZONTAL;
+        headerContraints.weightx = 1;
+        headerContraints.gridx = 0;
+        headerContraints.gridy = 0;
 
-        add(myTodoHeader, constraint);
+        add(myTodoHeader, headerContraints);
 
         myBackButton.addActionListener(e -> ResetContent());
         myBackButton.setVisible(false);
 
-        constraint.gridy = 1;
-        add(myBackButton, constraint);
+        final GridBagConstraints backButtonConstraint = new GridBagConstraints();
+        backButtonConstraint.weightx = 1;
+        backButtonConstraint.gridx = 0;
+        backButtonConstraint.gridy = 1;
+        add(myBackButton, backButtonConstraint);
 
-        constraint.gridy = 1;
-        add(new JSeparator(), constraint);
+        final GridBagConstraints separatorConstraint = new GridBagConstraints();
+        separatorConstraint.gridy = 2;
+        add(new JSeparator(), separatorConstraint);
+
+        myContentArea = new JPanel();
+        myContentArea.setLayout(new BorderLayout());
+        myContentArea.setBackground(Color.RED);
+
+        final GridBagConstraints contentConstraints = new GridBagConstraints();
+        contentConstraints.fill = GridBagConstraints.BOTH;
+        contentConstraints.weightx = 1;
+        contentConstraints.weighty = 1;
+        contentConstraints.gridx = 0;
+        contentConstraints.gridy = 3;
+
+        add(myContentArea, contentConstraints);
 
         ResetContent();
     }
 
-    private void Priv_SetContent(Component aComponent)
-    {
-        if (!Objects.isNull(myContent))
-            remove(myContent);
-
-        final GridBagConstraints constraint = new GridBagConstraints();
-        constraint.fill = GridBagConstraints.BOTH;
-        constraint.weightx = 1;
-        constraint.weighty = 1;
-        constraint.gridx = 0;
-        constraint.gridy = 3;
-
-        myContent = aComponent;
-
-        add(myContent, constraint);
-
-        repaint();
-    }
-
-    public void SetContent(JPanel aPanel)
+    public void SetContent(JComponent aPanel)
     {
         myBackButton.setVisible(true);
-        Priv_SetContent(aPanel);
+        myContentArea.removeAll();
+        myContentArea.add(aPanel, BorderLayout.CENTER);
     }
 
     public void ResetContent()
     {
         TodoPlugin.debug("Returned to main panel", 3);
         myBackButton.setVisible(false);
-        Priv_SetContent(myDefaultContent);
+        myContentArea.removeAll();
+        myContentArea.add(myDefaultContent, BorderLayout.CENTER);
     }
 }

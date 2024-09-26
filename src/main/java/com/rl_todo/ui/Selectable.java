@@ -1,5 +1,8 @@
 package com.rl_todo.ui;
 
+import com.rl_todo.DrawingUtils;
+import com.rl_todo.TodoPlugin;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
@@ -7,29 +10,39 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class Selectable extends JLabel
+public class Selectable extends JPanel
 {
-    public Selectable(String aText, Runnable aOnSelect)
-    {
-        super(aText);
-        setBorder(new EmptyBorder(1,1,1,1));
-        setToolTipText(aText);
+    TodoPlugin myPlugin;
+    String myText;
+    Runnable myOnSelected;
 
-        JLabel instance = this;
+    public Selectable(TodoPlugin aPlugin, String aText, Runnable aOnSelect)
+    {
+        myPlugin = aPlugin;
+        myText = aText;
+        myOnSelected = aOnSelect;
+
+        setBorder(new EmptyBorder(1,1,1,1));
+
+        setMaximumSize(new Dimension(400, 20));
+        setPreferredSize(new Dimension(200, 20));
+        setMinimumSize(new Dimension(200, 20));
 
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e)
             {
                 super.mouseEntered(e);
-                instance.setBorder(new LineBorder(Color.gray));
+                setBorder(new LineBorder(Color.gray));
+                repaint();
             }
 
             @Override
             public void mouseExited(MouseEvent e)
             {
                 super.mouseExited(e);
-                instance.setBorder(new EmptyBorder(1,1,1,1));
+                setBorder(new EmptyBorder(1,1,1,1));
+                repaint();
             }
 
             @Override
@@ -38,8 +51,21 @@ public class Selectable extends JLabel
                 if (e.getButton() != 1)
                     return;
 
-                aOnSelect.run();
+                myOnSelected.run();
             }
         });
+    }
+
+    public void SetOnSelection(Runnable aOnSeleced)
+    {
+        myOnSelected = aOnSeleced;
+    }
+
+    @Override
+    public void paintComponent(Graphics g)
+    {
+        g.setColor(new Color(40,40,48));
+        g.fillRect(0,0, getWidth(), getHeight());
+        DrawingUtils.DrawText(myPlugin, g, myText, 3, 2, false ,true, null);
     }
 }

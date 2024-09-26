@@ -40,4 +40,10 @@ public class TreeNode extends JPanel
             myBranch = null;
         }
     }
+
+    public void Toggle()
+    {
+        if (myBranch != null)
+            myBranch.setVisible(!myBranch.isVisible());
+    }
 }

@@ -4,20 +4,24 @@ import com.rl_todo.TodoPlugin;
 import net.runelite.api.ItemID;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 
 import static net.runelite.api.SpriteID.*;
 
-public class GoalPanel extends JPanel
+public class GoalViewPanel extends JPanel
 {
     public GoalCollectionPanel myGoals;
     TodoPlugin myPlugin;
 
-    public GoalPanel(TodoPlugin aPlugin)
+    public GoalViewPanel(TodoPlugin aPlugin)
     {
         super();
         myPlugin = aPlugin;
         myGoals = new GoalCollectionPanel(myPlugin);
+
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
 
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
@@ -29,7 +33,7 @@ public class GoalPanel extends JPanel
 
         addGoalButton.setAlignmentX(0.0f);
 
-        add(addGoalButton);
+        buttonPanel.add(addGoalButton);
 
         JButton allMethods = new JButton("View all methods");
         allMethods.addActionListener(e -> {
@@ -39,7 +43,9 @@ public class GoalPanel extends JPanel
 
         allMethods.setAlignmentX(0.0f);
 
-        add(allMethods);
+        buttonPanel.add(allMethods);
+
+        add(buttonPanel);
 
         JPanel statusPanel = new JPanel();
         statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
