@@ -13,12 +13,18 @@ public class MethodViewer extends JPanel {
     {
         setLayout(new GridBagLayout());
 
+        GridBagConstraints labelConstraints = new GridBagConstraints();
+        labelConstraints.gridx = 0;
+        labelConstraints.gridy = 0;
+        labelConstraints.gridwidth = 3;
+        add(new JLabel(aMethod.myName), labelConstraints);
+
         if (!aMethod.myRequires.IsEmpty())
         {
             GridBagConstraints requirementsConstraints = new GridBagConstraints();
 
             requirementsConstraints.gridx = 0;
-            requirementsConstraints.gridy = 0;
+            requirementsConstraints.gridy = 1;
             requirementsConstraints.gridwidth = 3;
             requirementsConstraints.fill = GridBagConstraints.HORIZONTAL;
 
@@ -30,7 +36,7 @@ public class MethodViewer extends JPanel {
             GridBagConstraints takesConstraints = new GridBagConstraints();
 
             takesConstraints.gridx = 0;
-            takesConstraints.gridy = 1;
+            takesConstraints.gridy = 2;
             takesConstraints.fill = GridBagConstraints.VERTICAL;
 
             add(new ResourcePoolView(aPlugin, aMethod.myTakes, "Takes"), takesConstraints);
@@ -41,7 +47,7 @@ public class MethodViewer extends JPanel {
             GridBagConstraints arrowConstraints = new GridBagConstraints();
 
             arrowConstraints.gridx = 1;
-            arrowConstraints.gridy = 1;
+            arrowConstraints.gridy = 2;
 
             add(new Arrow(), arrowConstraints);
         }
@@ -51,7 +57,7 @@ public class MethodViewer extends JPanel {
             GridBagConstraints makesConstraints = new GridBagConstraints();
 
             makesConstraints.gridx = 2;
-            makesConstraints.gridy = 1;
+            makesConstraints.gridy = 2;
             makesConstraints.fill = GridBagConstraints.VERTICAL;
 
             add(new ResourcePoolView(aPlugin, aMethod.myMakes, "Makes"), makesConstraints);

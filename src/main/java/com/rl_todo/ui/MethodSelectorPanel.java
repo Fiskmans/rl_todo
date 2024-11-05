@@ -116,7 +116,7 @@ public class MethodSelectorPanel extends JPanel
 
             selector.addMouseListener(new MouseListener() {
 
-                MethodViewerPopup popup;
+                MethodViewerPopup myViewer;
 
                 @Override
                 public void mouseClicked(MouseEvent e) {}
@@ -130,17 +130,13 @@ public class MethodSelectorPanel extends JPanel
                 @Override
                 public void mouseEntered(MouseEvent e) {
 
-                    int x = -10;
-                    int y = SwingUtilities.convertPoint(selector, 0, 0, invoker).y;
-
-                    popup = new MethodViewerPopup(myPlugin, aMethod, invoker,  x, y);
-                    popup.setVisible(true);
+                    myViewer = new MethodViewerPopup(myPlugin, aMethod, invoker.getRootPane(), 15, 45);
                 }
 
                 @Override
                 public void mouseExited(MouseEvent e) {
-                    popup.setVisible(false);
-                    popup = null;
+                    myViewer.setVisible(false);
+                    myViewer = null;
                 }
             });
 

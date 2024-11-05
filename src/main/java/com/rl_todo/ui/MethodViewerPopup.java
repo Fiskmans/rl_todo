@@ -4,34 +4,53 @@ import com.rl_todo.TodoPlugin;
 import com.rl_todo.methods.Method;
 
 import javax.swing.*;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 
 public class MethodViewerPopup extends JPopupMenu
 {
+    float myAlpha;
+    Timer myAnimationTimer;
+
     public MethodViewerPopup(TodoPlugin aPlugin, Method aMethod, JComponent aRelativeTo, int x, int y)
     {
+        myAlpha = -0.32f;
         setLayout(new GridBagLayout());
-        setBorder(new CompoundBorder(new LineBorder(Color.gray, 1), new EmptyBorder(2,2,2,2)));
 
-        add(new MethodViewer(aPlugin, aMethod));
+        MethodViewer content = new MethodViewer(aPlugin, aMethod);
 
-        addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
+        add(content);
 
-                setLocation(SwingUtilities.convertPoint(aRelativeTo, x - getWidth(), y - getHeight(), getParent()));
-                super.componentResized(e);
-                setLocation(SwingUtilities.convertPoint(aRelativeTo, x - getWidth(), y - getHeight(), getParent()));
-            }
-        });
+        show(aRelativeTo, x, y);
 
-        show(aRelativeTo, x - 150, y - 100);
+        myAnimationTimer = new Timer(5, e -> Animate());
 
-        //TODO: make this less flickery
+        myAnimationTimer.setRepeats(true);
+        myAnimationTimer.start();
+    }
+
+    private void Animate()
+    {
+        if (myAlpha < 1.f)
+            myAlpha += 0.10f;
+
+        if (myAlpha > 1.f) {
+            myAlpha = 1.f;
+            myAnimationTimer.stop();
+        }
+
+        repaint();
+    }
+
+    @Override
+    public void paint(Graphics g) {
+
+        Graphics2D g2d = (Graphics2D) g.create();
+        g2d.setComposite(AlphaComposite.SrcOver.derive(myAlpha < 0.f ? 0.f : myAlpha));
+        super.paint(g2d);
+        g2d.dispose();
     }
 }

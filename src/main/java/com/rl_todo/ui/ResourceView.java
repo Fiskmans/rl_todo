@@ -49,6 +49,9 @@ public class ResourceView extends JPanel {
     @Override
     public void paintComponent(Graphics g)
     {
+        g.setColor(getBackground());
+        g.fillRect(0,0,getWidth(), getHeight());
+
         g.drawImage(myIcon, 2,2, 16, 16, null);
 
         DrawingUtils.DrawText(myPlugin,g, myText, 23, 2, false, true, null);
