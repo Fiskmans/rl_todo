@@ -21,7 +21,7 @@ public class ProgressSources
         int totalPoints = aPlugin.myClient.getVarbitValue(Varbits.NMZ_POINTS)
                 + aPlugin.myClient.getVarpValue(VarPlayer.NMZ_REWARD_POINTS);
 
-        Generic.SetProgress("nmz.points", totalPoints);
+        Generic.SetProgress("minigame.nmz_points", totalPoints);
     }
 
     void RefreshLevels(TodoPlugin aPlugin)

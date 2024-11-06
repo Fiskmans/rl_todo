@@ -4,9 +4,8 @@ import java.awt.*;
 
 public class DrawingUtils
 {
-    static void DrawText(TodoPlugin aPlugin, Graphics g, String aText, int aX, int aY, boolean aRightAlign, boolean aTopAlign)
+    public static void DrawText(TodoPlugin aPlugin, Graphics g, String aText, int aX, int aY, boolean aRightAlign, boolean aTopAlign, Color aTextColor)
     {
-
         char[] chars = new char[aText.length()];
         aText.getChars(0,aText.length(), chars, 0);
 
@@ -28,7 +27,18 @@ public class DrawingUtils
         g.drawChars(chars, 0, chars.length, x , y + 1);
         g.drawChars(chars, 0, chars.length, x - 1, y);
         g.drawChars(chars, 0, chars.length, x , y - 1);
-        g.setColor(aPlugin.myConfig.textColor());
+
+        if (aTextColor != null)
+            g.setColor(aTextColor);
+        else
+            g.setColor(aPlugin.myConfig.textColor());
         g.drawChars(chars, 0, chars.length, x, y);
+    }
+
+    public static Dimension MeasureText(Graphics g, String aText)
+    {
+        FontMetrics metrics = g.getFontMetrics();
+
+        return new Dimension(metrics.stringWidth(aText), metrics.getHeight());
     }
 }

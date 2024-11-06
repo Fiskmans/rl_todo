@@ -1,18 +1,23 @@
 package com.rl_todo;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.inject.Provides;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.swing.*;
 
 import com.rl_todo.methods.MethodManager;
 import com.rl_todo.ui.TodoPanel;
+import com.rl_todo.ui.Utilities;
+import com.rl_todo.ui.toolbox.TreeBranch;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.events.*;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
-import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.SpriteManager;
 import net.runelite.client.game.chatbox.ChatboxItemSearch;
@@ -22,8 +27,10 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.util.ImageUtil;
+import static net.runelite.client.RuneLite.RUNELITE_DIR;
 
 import java.awt.image.BufferedImage;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -63,26 +70,40 @@ public class TodoPlugin extends Plugin
 	public ChatboxItemSearch myChatboxItemSearch;
 	@Inject
 	public ChatboxTextInput myChatboxTextInput;
+	@Inject
+	public Gson myGson;
+
+	@Inject
+	@Named("developerMode")
+	boolean developerMode;
+
+	public static final File ROOT_DIRECTORY = new File(RUNELITE_DIR, "todo_plugin");
+	public static final String DATA_FILE = ROOT_DIRECTORY + File.separator + "goals.json";
 
 	public MethodManager myMethodManager;
 	public TodoPanel myPanel;
 	public Quests myQuest;
+	public Utilities myUtilities;
 
 	public static final BufferedImage ICON = ImageUtil.loadImageResource(TodoPlugin.class, "/Icon_16x16.png");
 	public static final String CONFIG_GROUP = "Todo";
 	private static final String LOG_TAG = "[todo] ";
 	private NavigationButton myNavButton;
-	static TodoPlugin myGlobalInstance = null;
+	private static TodoPlugin myGlobalInstance = null;
 	private boolean myIsLoaded = false;
+	private boolean myWantsSave = false;
 
 	public static void debug(Object aMessage, int aLevel)
 	{
 		if (myGlobalInstance != null && aLevel < myGlobalInstance.myConfig.debug())
 		{
-			myGlobalInstance.myClientThread.invokeLater(() ->
-			{
-				myGlobalInstance.myClient.addChatMessage(ChatMessageType.CONSOLE, LOG_TAG, aMessage.toString(), "Todo");
-			});
+			myGlobalInstance.myClientThread.invokeLater(
+				() -> myGlobalInstance.myClient.addChatMessage(
+					ChatMessageType.CONSOLE,
+					LOG_TAG,
+					aMessage.toString(),
+					"Todo"));
+
 			log.info(LOG_TAG + aMessage.toString());
 		}
 	}
@@ -91,9 +112,12 @@ public class TodoPlugin extends Plugin
 	public static void IgnorableError(Object aMessage)
 	{
 		myGlobalInstance.myClientThread.invokeLater(() ->
-		{
-			myGlobalInstance.myClient.addChatMessage(ChatMessageType.CONSOLE, LOG_TAG, aMessage.toString(), "Todo");
-		});
+			myGlobalInstance.myClient.addChatMessage(
+				ChatMessageType.CONSOLE,
+				LOG_TAG,
+				aMessage.toString(),
+				"Todo"));
+
 		log.info(LOG_TAG + aMessage.toString());
 	}
 
@@ -109,9 +133,12 @@ public class TodoPlugin extends Plugin
 	{
 		debug("startUp", 1);
 
+		TreeBranch.Indent = 10;
+		TreeBranch.ArcRadius = 3;
+		TreeBranch.myNormalColor = myConfig.treeColor();
+
 		myGlobalInstance = this;
-
-
+		myUtilities = new Utilities(this);
 
 		myPanel = new TodoPanel(this);
 		myNavButton = NavigationButton.builder()
@@ -133,12 +160,8 @@ public class TodoPlugin extends Plugin
 		{
 			myQuest = new Quests(this);
 			myMethodManager = new MethodManager(this);
-			myQuest.Load(); // TODO: this should be done on first game tick after logging in
 
-			SwingUtilities.invokeLater(()->
-			{
-				myClientToolbar.addNavigation(myNavButton);
-			});
+			SwingUtilities.invokeLater(() -> myClientToolbar.addNavigation(myNavButton));
 		});
 	}
 
@@ -149,10 +172,7 @@ public class TodoPlugin extends Plugin
 
 		myProgressManager.RemoveAllSources();
 
-		SwingUtilities.invokeLater(()->
-		{
-			myClientToolbar.removeNavigation(myNavButton);
-		});
+		SwingUtilities.invokeLater(()-> myClientToolbar.removeNavigation(myNavButton));
 
 		myQuest = null;
 		myNavButton = null;
@@ -175,7 +195,6 @@ public class TodoPlugin extends Plugin
 					OnLogin();
 					break;
 				default:
-					myPanel.OnLoggedOut();
 					myIsLoaded = false;
 					break;
 			}
@@ -208,8 +227,8 @@ public class TodoPlugin extends Plugin
 	{
 		switch (ev.getVarpId())
 		{
-			case 1059:
-			case 1060:
+			case 1059: // Current nmz points
+			case VarPlayer.NMZ_REWARD_POINTS:
 				mySources.RefreshNMZ(this);
 				break;
 		}
@@ -245,18 +264,6 @@ public class TodoPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onConfigChanged(ConfigChanged event)
-	{
-		if (!event.getGroup().equals(CONFIG_GROUP))
-			return;
-
-		SwingUtilities.invokeLater(()->
-		{
-			myPanel.GetGoals().OnConfigChanged();
-		});
-	}
-
-	@Subscribe
 	protected void onStatChanged(StatChanged event)
 	{
 		mySources.Levels.SetProgress(IdBuilder.levelId(event.getSkill()), event.getLevel());
@@ -264,15 +271,14 @@ public class TodoPlugin extends Plugin
 	}
 
 	@Subscribe
-	public void onAccountHashChanged(AccountHashChanged event)
-	{
-		myPanel.Disable("Does not support switching accounts without restarting the plugin");
-	}
-
-	@Subscribe
 	public void onGameTick(GameTick event)
 	{
 		myProgressManager.Tick();
+		if (myWantsSave)
+		{
+			Save();
+			myWantsSave = false;
+		}
 	}
 
 	@Provides
@@ -289,14 +295,57 @@ public class TodoPlugin extends Plugin
 		myIsLoaded = true;
 
 		myQuest.Load();
-		myPanel.OnLoggedIn();
 		mySources.RefreshNMZ(this);
 		mySources.RefreshLevels(this);
 
-
-		SwingUtilities.invokeLater(()->
+		if (new File(DATA_FILE).exists())
 		{
-			myPanel.GetGoals().Load();
-		});
+			SwingUtilities.invokeLater(()->
+			{
+				try
+				{
+					FileReader reader = new FileReader(DATA_FILE);
+					JsonObject content = new JsonParser().parse(reader).getAsJsonObject();
+					myPanel.GetGoals().Deserialize(content);
+				}
+				catch (Exception aException)
+				{
+					IgnorableError("Failed to load goals from " + DATA_FILE);
+					IgnorableError(aException);
+				}
+				
+
+
+				myWantsSave = false;
+			});
+		}
+	}
+
+	public void RequestSave()
+	{
+		myWantsSave = true;
+	}
+
+	private void Save()
+	{
+		String content = myPanel.GetGoals().Serialize();
+
+		if (ROOT_DIRECTORY.mkdirs())
+		{
+			debug("Created save directory", 1);
+		}
+
+		try
+		{
+			BufferedWriter writer = new BufferedWriter(new FileWriter(DATA_FILE));
+			writer.write(content);
+			writer.close();
+		}
+		catch (IOException exception)
+		{
+			IgnorableError("Failed to save goals to " + DATA_FILE);
+		}
+
+		log.info(content);
 	}
 }

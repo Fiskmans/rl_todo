@@ -5,17 +5,17 @@ import com.rl_todo.IdBuilder;
 import com.rl_todo.TodoPlugin;
 
 import javax.swing.*;
-import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 
 public class AddGoalPanel extends JPanel
 {
     private TodoPlugin myPlugin;
+    GoalViewPanel myOwner;
 
-    public AddGoalPanel(TodoPlugin aPlugin)
+    public AddGoalPanel(TodoPlugin aPlugin, GoalViewPanel aOwner)
     {
         myPlugin = aPlugin;
+        myOwner = aOwner;
 
         setLayout(new GridBagLayout());
 
@@ -26,13 +26,13 @@ public class AddGoalPanel extends JPanel
         constraints.gridy  = 0;
         constraints.gridx  = 0;
 
-        add(new Selectable("Item", () -> { AddItemGoal(); }), constraints);
+        add(new Selectable(myPlugin, "Item", () -> { AddItemGoal(); }), constraints);
 
         constraints.gridy ++;
-        add(new Selectable("Level", () -> { AddLevelGoal(); }), constraints);
+        add(new Selectable(myPlugin, "Level", () -> { AddLevelGoal(); }), constraints);
 
         constraints.gridy ++;
-        add(new Selectable("Quest", () -> { AddQuestGoal(); }), constraints);
+        add(new Selectable(myPlugin, "Quest", () -> { AddQuestGoal(); }), constraints);
 
     }
 
@@ -48,7 +48,7 @@ public class AddGoalPanel extends JPanel
 
                     SwingUtilities.invokeLater(() ->
                     {
-                        new Goal(null, myPlugin, id, 1, true);
+                        myOwner.myGoals.AddGoal(new Goal(myPlugin, id, 1, true,null));
                     });
                 })
                 .build();

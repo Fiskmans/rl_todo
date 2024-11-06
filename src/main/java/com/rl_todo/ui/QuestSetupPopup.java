@@ -159,13 +159,17 @@ public class QuestSetupPopup extends JPopupMenu
 
                 for(ListedQuest quest : filteredQuests)
                 {
-                    Selectable selectable = new Selectable(quest.myGameQuest.getName(), () -> {
-                        new Goal(null, myPlugin, IdBuilder.questId(quest.myGameQuest), 1, true);
+                    String name = "";
+                    if (Quests.MiniQuests.contains(quest.myGameQuest))
+                        name += "MQ: ";
+
+                    name += quest.myGameQuest.getName();
+
+
+                    Selectable selectable = new Selectable(myPlugin, name, () -> {
+                        new Goal(myPlugin, IdBuilder.questId(quest.myGameQuest), 1, true, null);
                         myPlugin.myPanel.ResetContent();
                     });
-
-                    if (Quests.MiniQuests.contains(quest.myGameQuest))
-                        selectable.setText("MQ: " + quest.myGameQuest.getName());
 
                     switch (quest.myState)
                     {

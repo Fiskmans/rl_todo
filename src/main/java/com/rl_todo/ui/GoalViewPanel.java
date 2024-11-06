@@ -1,6 +1,5 @@
 package com.rl_todo.ui;
 
-import com.rl_todo.GoalCollection;
 import com.rl_todo.TodoPlugin;
 import net.runelite.api.ItemID;
 
@@ -10,33 +9,45 @@ import java.awt.image.BufferedImage;
 
 import static net.runelite.api.SpriteID.*;
 
-public class GoalPanel extends JPanel
+public class GoalViewPanel extends JPanel
 {
-    public GoalCollection myGoals;
+    public GoalCollectionPanel myGoals;
     TodoPlugin myPlugin;
 
-    public GoalPanel(TodoPlugin aPlugin)
+    public GoalViewPanel(TodoPlugin aPlugin)
     {
         super();
         myPlugin = aPlugin;
-        myGoals = new GoalCollection(myPlugin);
+        myGoals = new GoalCollectionPanel(myPlugin);
 
-        setLayout(new GridBagLayout());
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
 
-        GridBagConstraints constraints = new GridBagConstraints();
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.weightx = 1;
-        constraints.gridx = 0;
-        constraints.gridy = 0;
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
-
-        JButton addGoal = new JButton("Add Goal");
-        addGoal.addActionListener(e -> {
-            TodoPlugin.debug("Switched to add goal panel", 3);
-            myPlugin.myPanel.SetContent(new AddGoalPanel(myPlugin));
+        JButton addGoalButton = new JButton("Add Goal");
+        addGoalButton.addActionListener(e -> {
+            TodoPlugin.debug("Open add goal", 3);
+            new AddGoalPopup(myPlugin)
+                .OnDone((goal) -> myGoals.AddGoal(goal))
+                .show(addGoalButton, -400,0);
         });
 
-        add(addGoal, constraints);
+        addGoalButton.setAlignmentX(0.0f);
+
+        buttonPanel.add(addGoalButton);
+
+        JButton allMethods = new JButton("View all methods");
+        allMethods.addActionListener(e -> {
+            TodoPlugin.debug("Switched to add view methods", 3);
+            myPlugin.myPanel.SetContent(new MethodSelectorPanel(myPlugin, null));
+        });
+
+        allMethods.setAlignmentX(0.0f);
+
+        buttonPanel.add(allMethods);
+
+        add(buttonPanel);
 
         JPanel statusPanel = new JPanel();
         statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
@@ -62,16 +73,9 @@ public class GoalPanel extends JPanel
             });
         });
 
+        add(statusPanel);
 
-        constraints.fill = GridBagConstraints.NONE;
-        constraints.gridy = 2;
-        add(statusPanel, constraints);
-
-
-        constraints.fill = GridBagConstraints.BOTH;
-        constraints.weighty = 1;
-        constraints.gridy = 3;
-        add(new JScrollPane(myGoals, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED), constraints);
+        add(new JScrollPane(myGoals, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
     }
 
 }

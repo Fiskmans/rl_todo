@@ -2,6 +2,8 @@ package com.rl_todo;
 
 import net.runelite.api.ItemID;
 
+import java.util.Optional;
+
 public enum Alternative
 {
     MINING_TOOL("Mining tool", "mining_tool",
@@ -54,6 +56,19 @@ public enum Alternative
         this.myName = name;
         this.myId = aId;
         this.myAlternatives = aAlternatives;
+    }
+
+
+    public static Optional<Alternative> FromID(String aId)
+    {
+        for (Alternative alt : values())
+        {
+            if (alt.myId.equals(aId))
+            {
+                return Optional.of(alt);
+            }
+        }
+        return Optional.empty();
     }
 
     /**
