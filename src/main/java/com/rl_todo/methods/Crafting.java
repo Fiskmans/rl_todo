@@ -381,14 +381,10 @@ public class Crafting
 
             for(Chiselable chisel : new Chiselable[]{
                     new Chiselable(ItemID.BLOODNTAR_SNELM, ItemID.BLAMISH_RED_SHELL, 1, 15, 3250, " (round)"),
-                    new Chiselable(ItemID.BLOODNTAR_SNELM_3339, ItemID.BLAMISH_RED_SHELL_3357, 1, 15, 3250, " (pointed)"),
                     new Chiselable(ItemID.BROKEN_BARK_SNELM, ItemID.BLAMISH_BARK_SHELL, 1, 15, 3250, ""),
                     new Chiselable(ItemID.BRUISE_BLUE_SNELM, ItemID.BLAMISH_BLUE_SHELL, 1, 15, 3250, " (round)"),
-                    new Chiselable(ItemID.BRUISE_BLUE_SNELM_3343, ItemID.BLAMISH_BLUE_SHELL_3361, 1, 15, 3250, " (pointed)"),
                     new Chiselable(ItemID.MYRE_SNELM, ItemID.BLAMISH_MYRE_SHELL, 1, 15, 3250, " (round)"),
-                    new Chiselable(ItemID.MYRE_SNELM_3337, ItemID.BLAMISH_MYRE_SHELL_3355, 1, 15, 3250, " (pointed)"),
                     new Chiselable(ItemID.OCHRE_SNELM, ItemID.BLAMISH_OCHRE_SHELL, 1, 15, 3250, " (round)"),
-                    new Chiselable(ItemID.OCHRE_SNELM_3341, ItemID.BLAMISH_OCHRE_SHELL_3359, 1, 15, 3250, " (pointed)"),
 
 
                     new Chiselable(ItemID.FRESH_CRAB_SHELL, ItemID.CRAB_HELMET, 1, 15, 3250, ""),
