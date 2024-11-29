@@ -23,6 +23,9 @@ public class MethodSelectorPanel extends JPanel
 {
     TodoPlugin myPlugin;
     JPanel myInnerPanel = new JPanel();
+    MethodViewer myViewer;
+    boolean myIsPinned = false;
+
 
     Consumer<Method> myOnSelected;
 
@@ -42,6 +45,16 @@ public class MethodSelectorPanel extends JPanel
         }
 
         setLayout(new BorderLayout());
+
+        myViewer = new MethodViewer(myPlugin);
+
+        JScrollPane previewPane = new JScrollPane(myViewer, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        previewPane.setBorder(new LineBorder(Color.lightGray, 1));
+        previewPane.setMinimumSize(new Dimension(200,250));
+        previewPane.setPreferredSize(new Dimension(200,250));
+        previewPane.setMaximumSize(new Dimension(200,250));
+        add(previewPane, BorderLayout.NORTH);
 
         myInnerPanel.setLayout(new BoxLayout(myInnerPanel, BoxLayout.PAGE_AXIS));
         myInnerPanel.setBorder(new CompoundBorder(new LineBorder(Color.gray, 1), new EmptyBorder(2,2,2,2)));
@@ -108,15 +121,14 @@ public class MethodSelectorPanel extends JPanel
                 if (myOnSelected != null)
                 {
                     myOnSelected.accept(aMethod);
-                    myPlugin.myPanel.ResetContent();
                 }
+
+                myViewer.SetMethod(aMethod);
+                myIsPinned = true;
             });
 
-            MethodSelectorPanel invoker = this;
 
             selector.addMouseListener(new MouseListener() {
-
-                MethodViewerPopup myViewer;
 
                 @Override
                 public void mouseClicked(MouseEvent e) {}
@@ -130,14 +142,12 @@ public class MethodSelectorPanel extends JPanel
                 @Override
                 public void mouseEntered(MouseEvent e) {
 
-                    myViewer = new MethodViewerPopup(myPlugin, aMethod, invoker.getRootPane(), 15, 45);
+                    if (!myIsPinned)
+                        myViewer.SetMethod(aMethod);
                 }
 
                 @Override
-                public void mouseExited(MouseEvent e) {
-                    myViewer.setVisible(false);
-                    myViewer = null;
-                }
+                public void mouseExited(MouseEvent e) {}
             });
 
             at.AddNode(selector);

@@ -9,58 +9,34 @@ import java.awt.*;
 
 public class MethodViewer extends JPanel {
 
-    public MethodViewer(TodoPlugin aPlugin, Method aMethod)
-    {
-        setLayout(new GridBagLayout());
+    TodoPlugin myPlugin;
 
-        GridBagConstraints labelConstraints = new GridBagConstraints();
-        labelConstraints.gridx = 0;
-        labelConstraints.gridy = 0;
-        labelConstraints.gridwidth = 3;
-        add(new JLabel(aMethod.myName), labelConstraints);
+    public MethodViewer(TodoPlugin aPlugin)
+    {
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+        myPlugin = aPlugin;
+    }
+
+    public void SetMethod(Method aMethod)
+    {
+        removeAll();
+        JLabel name = new JLabel("<html><p style=\\\"width:160px\\\">"+aMethod.myName+"</p></html>");
+        name.setAlignmentX(JLabel.LEFT_ALIGNMENT);
+        add(name);
 
         if (!aMethod.myRequires.IsEmpty())
-        {
-            GridBagConstraints requirementsConstraints = new GridBagConstraints();
-
-            requirementsConstraints.gridx = 0;
-            requirementsConstraints.gridy = 1;
-            requirementsConstraints.gridwidth = 3;
-            requirementsConstraints.fill = GridBagConstraints.HORIZONTAL;
-
-            add(new ResourcePoolView(aPlugin, aMethod.myRequires, "Requires"), requirementsConstraints);
-        }
+            add(new ResourcePoolView(myPlugin, aMethod.myRequires, "Requires"));
 
         if (!aMethod.myTakes.IsEmpty())
-        {
-            GridBagConstraints takesConstraints = new GridBagConstraints();
-
-            takesConstraints.gridx = 0;
-            takesConstraints.gridy = 2;
-            takesConstraints.fill = GridBagConstraints.VERTICAL;
-
-            add(new ResourcePoolView(aPlugin, aMethod.myTakes, "Takes"), takesConstraints);
-        }
+            add(new ResourcePoolView(myPlugin, aMethod.myTakes, "Takes"));
 
         if (!aMethod.myTakes.IsEmpty() && !aMethod.myMakes.IsEmpty())
-        {
-            GridBagConstraints arrowConstraints = new GridBagConstraints();
-
-            arrowConstraints.gridx = 1;
-            arrowConstraints.gridy = 2;
-
-            add(new Arrow(), arrowConstraints);
-        }
+            add(new Arrow());
 
         if (!aMethod.myMakes.IsEmpty())
-        {
-            GridBagConstraints makesConstraints = new GridBagConstraints();
+            add(new ResourcePoolView(myPlugin, aMethod.myMakes, "Makes"));
 
-            makesConstraints.gridx = 2;
-            makesConstraints.gridy = 2;
-            makesConstraints.fill = GridBagConstraints.VERTICAL;
-
-            add(new ResourcePoolView(aPlugin, aMethod.myMakes, "Makes"), makesConstraints);
-        }
+        repaint();
+        revalidate();
     }
 }
