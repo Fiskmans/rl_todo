@@ -15,6 +15,7 @@ public class Selectable extends JPanel
     TodoPlugin myPlugin;
     String myText;
     Runnable myOnSelected;
+    boolean myIsUnderlined = false;
 
     public Selectable(TodoPlugin aPlugin, String aText, Runnable aOnSelect)
     {
@@ -56,9 +57,17 @@ public class Selectable extends JPanel
         });
     }
 
-    public void SetOnSelection(Runnable aOnSeleced)
+    public void SetOnSelection(Runnable aOnSelected)
     {
-        myOnSelected = aOnSeleced;
+        myOnSelected = aOnSelected;
+    }
+    public void setUnderlined(boolean aValue)
+    {
+        if (aValue != myIsUnderlined)
+        {
+            myIsUnderlined = aValue;
+            repaint();
+        }
     }
 
     @Override
@@ -67,5 +76,13 @@ public class Selectable extends JPanel
         g.setColor(new Color(40,40,48));
         g.fillRect(0,0, getWidth(), getHeight());
         DrawingUtils.DrawText(myPlugin, g, myText, 3, 2, false ,true, null);
+
+        Dimension textSize = DrawingUtils.MeasureText(g, myText);
+
+        if (myIsUnderlined)
+        {
+            g.setColor(new Color(130,130,158));
+            g.drawLine(3, 2 + textSize.height, 3 + textSize.width, 2 + textSize.height);
+        }
     }
 }

@@ -20,9 +20,8 @@ public class MethodCategory extends TreeNode implements TreeNodeItem
     {
         super(new Selectable(aPlugin, aText, null));
 
-        ((Selectable)myContent).SetOnSelection(() -> {
-            this.Toggle();
-        });
+        ((Selectable)myContent).SetOnSelection(this::Toggle);
+        ((Selectable)myContent).setUnderlined(true);
 
         myPlugin = aPlugin;
         myText = aText;
