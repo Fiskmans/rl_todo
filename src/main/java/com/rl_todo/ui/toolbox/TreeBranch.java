@@ -33,7 +33,7 @@ public class TreeBranch extends JPanel {
         addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-
+                setVisible(false);
             }
 
             @Override

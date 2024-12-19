@@ -11,6 +11,8 @@ import java.util.List;
 @ConfigGroup("Todo")
 public interface TodoConfig extends Config
 {
+	String GithubWikiDataUrl = "https://raw.githubusercontent.com/fiskmans/rl_todo_data/main/methods.json";
+
 	@ConfigSection(
 			name = "Colors",
 			description = "Colors and accessibility",
@@ -104,6 +106,6 @@ public interface TodoConfig extends Config
 			name = "Method sources",
 			description = "Which folders to look in for methods"
 	)
-	default String methodSources() { return "${runelite}/todo_plugin/methods/custom;${runelite}/todo_plugin/methods/wiki"; }
+	default String methodSources() { return "${runelite}/todo_plugin/methods/custom;" + GithubWikiDataUrl; }
 
 }

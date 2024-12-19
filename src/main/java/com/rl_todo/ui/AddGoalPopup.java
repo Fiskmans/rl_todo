@@ -47,7 +47,7 @@ public class AddGoalPopup extends JPopupMenu {
                     comp.setBackground(new Color(20,20,20));
                 }
 
-                selectable.setBackground(new Color(40,40,40));
+                selectable.setBackground(new Color(255,0,0));
             });
 
             typePanel.add(selectable);

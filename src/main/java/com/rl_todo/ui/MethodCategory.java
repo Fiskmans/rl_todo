@@ -1,13 +1,9 @@
 package com.rl_todo.ui;
 
-import com.rl_todo.DrawingUtils;
 import com.rl_todo.TodoPlugin;
-import com.rl_todo.ui.toolbox.TreeBranch;
 import com.rl_todo.ui.toolbox.TreeNode;
 import com.rl_todo.ui.toolbox.TreeNodeItem;
 
-import javax.swing.*;
-import java.awt.*;
 import java.util.HashMap;
 
 public class MethodCategory extends TreeNode implements TreeNodeItem
@@ -36,7 +32,7 @@ public class MethodCategory extends TreeNode implements TreeNodeItem
         myChildren.put(aKey, created);
 
         created.setAlignmentX(RIGHT_ALIGNMENT);
-        AddNode(created);
+        AddNode(created, false);
 
         return created;
     }

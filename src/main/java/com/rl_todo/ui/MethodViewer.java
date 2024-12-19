@@ -3,9 +3,14 @@ package com.rl_todo.ui;
 import com.rl_todo.TodoPlugin;
 import com.rl_todo.methods.Method;
 import com.rl_todo.ui.toolbox.Arrow;
+import com.rl_todo.ui.toolbox.Stretchable;
+import com.rl_todo.utils.AwaitUtils;
+import com.rl_todo.utils.Awaitable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 public class MethodViewer extends JPanel {
 
@@ -13,30 +18,34 @@ public class MethodViewer extends JPanel {
 
     public MethodViewer(TodoPlugin aPlugin)
     {
-        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
         myPlugin = aPlugin;
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
     }
 
     public void SetMethod(Method aMethod)
     {
-        removeAll();
-        JLabel name = new JLabel("<html><p style=\\\"width:160px\\\">"+aMethod.myName+"</p></html>");
-        name.setAlignmentX(JLabel.LEFT_ALIGNMENT);
-        add(name);
+        final ResourcePoolView requires = aMethod.myRequires.IsEmpty()  ? null : new ResourcePoolView(myPlugin, aMethod.myRequires, "Requires");
+        final ResourcePoolView takes    = aMethod.myTakes.IsEmpty()     ? null : new ResourcePoolView(myPlugin, aMethod.myTakes,    "Takes");
+        final ResourcePoolView makes    = aMethod.myMakes.IsEmpty()     ? null : new ResourcePoolView(myPlugin, aMethod.myMakes,    "Makes");
 
-        if (!aMethod.myRequires.IsEmpty())
-            add(new ResourcePoolView(myPlugin, aMethod.myRequires, "Requires"));
+        AwaitUtils.WaitAll(
+            Stream.of(requires, takes, makes)
+                .filter(Objects::nonNull)
+                .map(ResourcePoolView::Await))
+            .WhenDone((sender) ->
+                SwingUtilities.invokeLater(() ->
+                {
+                    removeAll();
 
-        if (!aMethod.myTakes.IsEmpty())
-            add(new ResourcePoolView(myPlugin, aMethod.myTakes, "Takes"));
+                                                        add(new WrappingText(myPlugin, aMethod.GetName(), 230));
+                    if (requires != null)               add(requires);
+                    if (takes != null)                  add(takes);
+                    if (takes != null && makes != null) add(new Arrow());
+                    if (makes != null)                  add(makes);
+                                                        add(new Stretchable());
 
-        if (!aMethod.myTakes.IsEmpty() && !aMethod.myMakes.IsEmpty())
-            add(new Arrow());
-
-        if (!aMethod.myMakes.IsEmpty())
-            add(new ResourcePoolView(myPlugin, aMethod.myMakes, "Makes"));
-
-        repaint();
-        revalidate();
+                    repaint();
+                    revalidate();
+                }));
     }
 }

@@ -48,16 +48,18 @@ public class MethodSelectorPanel extends JPanel
 
         myViewer = new MethodViewer(myPlugin);
 
+        myViewer.setMinimumSize(new Dimension(230, 20));
+        myViewer.setPreferredSize(new Dimension(230, 250));
+        myViewer.setMaximumSize(new Dimension(230, 10000));
+
         JScrollPane previewPane = new JScrollPane(myViewer, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-        previewPane.setBorder(new LineBorder(Color.lightGray, 1));
-        previewPane.setMinimumSize(new Dimension(200,250));
-        previewPane.setPreferredSize(new Dimension(200,250));
-        previewPane.setMaximumSize(new Dimension(200,250));
+        previewPane.setMinimumSize(new Dimension(230,250));
+        previewPane.setPreferredSize(new Dimension(230,250));
+        previewPane.setMaximumSize(new Dimension(230,250));
         add(previewPane, BorderLayout.NORTH);
 
         myInnerPanel.setLayout(new BoxLayout(myInnerPanel, BoxLayout.PAGE_AXIS));
-        myInnerPanel.setBorder(new CompoundBorder(new LineBorder(Color.gray, 1), new EmptyBorder(2,2,2,2)));
 
         JScrollPane scrollPane = new JScrollPane(myInnerPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setAlignmentY(TOP_ALIGNMENT);
@@ -80,10 +82,9 @@ public class MethodSelectorPanel extends JPanel
 
     void AddOption(Method aMethod)
     {
-
         List<String> parts = Arrays.stream(aMethod.myCategory.split("[/\\\\]")).filter((s) -> !s.equals("")).collect(Collectors.toList());
 
-        if (parts.size() == 0)
+        if (parts.isEmpty())
         {
             //TODO: put them in the root? 'uncategorised'? idk, figure it out
             return;
@@ -150,7 +151,7 @@ public class MethodSelectorPanel extends JPanel
                 public void mouseExited(MouseEvent e) {}
             });
 
-            at.AddNode(selector);
+            at.AddNode(selector, false);
 
             repaint();
         });

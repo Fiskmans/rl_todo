@@ -1,6 +1,6 @@
 package com.rl_todo.ui;
 
-import com.rl_todo.DrawingUtils;
+import com.rl_todo.utils.DrawingUtils;
 import com.rl_todo.TodoPlugin;
 
 import javax.swing.*;
@@ -73,7 +73,7 @@ public class Selectable extends JPanel
     @Override
     public void paintComponent(Graphics g)
     {
-        g.setColor(new Color(40,40,48));
+        g.setColor(getBackground());
         g.fillRect(0,0, getWidth(), getHeight());
         DrawingUtils.DrawText(myPlugin, g, myText, 3, 2, false ,true, null);
 

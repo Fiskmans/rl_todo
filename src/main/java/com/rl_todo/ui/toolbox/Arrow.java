@@ -7,14 +7,17 @@ public class Arrow extends JPanel {
 
     public Arrow()
     {
-        setMinimumSize(new Dimension(20,26));
-        setPreferredSize(new Dimension(20,26));
-        setMaximumSize(new Dimension(300,26));
+        setMinimumSize(new Dimension(230,26));
+        setPreferredSize(new Dimension(230,26));
+        setMaximumSize(new Dimension(230,26));
     }
 
     @Override
     public void paintComponent(Graphics g)
     {
+        g.setColor(getBackground());
+        g.fillRect(0,0,getWidth(), getHeight());
+
         g.setColor(Color.gray);
 
         final int backing = 12;
