@@ -2,21 +2,15 @@ package com.rl_todo.ui;
 
 import com.rl_todo.*;
 import com.rl_todo.methods.Method;
-import joptsimple.util.KeyValuePair;
+import com.rl_todo.ui.toolbox.SelectableText;
 
 import javax.swing.*;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class MethodSelectorPanel extends JPanel
@@ -117,7 +111,7 @@ public class MethodSelectorPanel extends JPanel
                 at = at.GetOrCreateChild(key);
             }
 
-            SelectableMethod selector = new SelectableMethod(myPlugin, aMethod, () ->
+            SelectableText selector = new SelectableText(myPlugin, aMethod.myName, () ->
             {
                 if (myOnSelected != null)
                 {

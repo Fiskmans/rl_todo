@@ -3,7 +3,7 @@ package com.rl_todo.ui;
 import com.rl_todo.Goal;
 import com.rl_todo.IdType;
 import com.rl_todo.TodoPlugin;
-import org.apache.commons.lang3.text.translate.CodePointTranslator;
+import com.rl_todo.ui.toolbox.SelectableText;
 
 import javax.swing.*;
 import java.awt.*;
@@ -37,9 +37,9 @@ public class AddGoalPopup extends JPopupMenu {
 
         for(IdType type : IdType.values())
         {
-            Selectable selectable = new Selectable(myPlugin, type.GetName(), null);
+            SelectableText selectableText = new SelectableText(myPlugin, type.GetName(), null);
 
-            selectable.SetOnSelection(() ->
+            selectableText.SetOnSelection(() ->
             {
                 myType = type.GetName();
                 for(Component comp : typePanel.getComponents())
@@ -47,10 +47,10 @@ public class AddGoalPopup extends JPopupMenu {
                     comp.setBackground(new Color(20,20,20));
                 }
 
-                selectable.setBackground(new Color(255,0,0));
+                selectableText.setBackground(new Color(255,0,0));
             });
 
-            typePanel.add(selectable);
+            typePanel.add(selectableText);
         }
 
         GridBagConstraints typeSelectorconstraints = new GridBagConstraints();

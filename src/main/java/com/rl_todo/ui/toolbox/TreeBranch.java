@@ -15,8 +15,8 @@ public class TreeBranch extends JPanel {
     public static Color myHoverColor = Color.LIGHT_GRAY;
     public static Color myNormalColor = Color.white;
 
-    public static int Indent = 20;
-    public static int ArcRadius = 5;
+    public static int Indent = 10;
+    public static int ArcRadius = 3;
 
     public TreeBranch()
     {
@@ -63,7 +63,19 @@ public class TreeBranch extends JPanel {
     public <T extends JComponent & TreeNodeItem> void AddNode(T aNode)
     {
         aNode.setAlignmentX(RIGHT_ALIGNMENT);
-        myNodePanel.add(aNode);
+
+        int at = -1;
+
+        for (int i = 0; i < myNodePanel.getComponents().length; i++)
+        {
+            if (aNode.IsBefore((TreeNodeItem) myNodePanel.getComponent(i)))
+            {
+                at = i;
+                break;
+            }
+        }
+
+        myNodePanel.add(aNode, at);
     }
 
     public <T extends JComponent & TreeNodeItem> void RemoveNode(T aNode)
@@ -102,7 +114,7 @@ public class TreeBranch extends JPanel {
             if (ArcRadius < 10)
                 g.drawLine(next.x, next.y, startOfBranch.x, startOfBranch.y);
             else
-                g.drawArc(next.x, next.y, ArcRadius, ArcRadius, 90, 180);
+                g.drawArc(next.x, next.y - ArcRadius, ArcRadius * 2, ArcRadius * 2, 180, 90);
 
             g.drawLine(startOfBranch.x, startOfBranch.y, target.x, target.y);
 

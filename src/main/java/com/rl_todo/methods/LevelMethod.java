@@ -1,14 +1,11 @@
 package com.rl_todo.methods;
 
-import com.rl_todo.IdBuilder;
+import com.rl_todo.ui.IdBuilder;
 import com.rl_todo.Resource;
 import com.rl_todo.ResourcePool;
 import com.rl_todo.TodoPlugin;
 import net.runelite.api.Client;
 import net.runelite.api.Skill;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class LevelMethod extends Method
 {

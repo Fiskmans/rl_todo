@@ -1,4 +1,4 @@
-package com.rl_todo.ui;
+package com.rl_todo.ui.toolbox;
 
 import com.rl_todo.utils.DrawingUtils;
 import com.rl_todo.TodoPlugin;
@@ -10,14 +10,14 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class Selectable extends JPanel
+public class SelectableText extends JPanel implements TreeNodeItem
 {
     TodoPlugin myPlugin;
     String myText;
     Runnable myOnSelected;
     boolean myIsUnderlined = false;
 
-    public Selectable(TodoPlugin aPlugin, String aText, Runnable aOnSelect)
+    public SelectableText(TodoPlugin aPlugin, String aText, Runnable aOnSelect)
     {
         myPlugin = aPlugin;
         myText = aText;
@@ -75,14 +75,18 @@ public class Selectable extends JPanel
     {
         g.setColor(getBackground());
         g.fillRect(0,0, getWidth(), getHeight());
-        DrawingUtils.DrawText(myPlugin, g, myText, 3, 2, false ,true, null);
 
-        Dimension textSize = DrawingUtils.MeasureText(g, myText);
+        Dimension textSize = DrawingUtils.DrawText(myPlugin, g, myText, 3, 1, false ,true, null);
 
         if (myIsUnderlined)
         {
             g.setColor(new Color(130,130,158));
-            g.drawLine(3, 2 + textSize.height, 3 + textSize.width, 2 + textSize.height);
+            g.drawLine(3, 1 + textSize.height, 3 + textSize.width, 1 + textSize.height);
         }
+    }
+
+    @Override
+    public int GetAnchorDepth() {
+        return 10;
     }
 }

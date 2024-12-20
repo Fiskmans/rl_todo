@@ -1,6 +1,7 @@
 package com.rl_todo.ui;
 
 import com.rl_todo.TodoPlugin;
+import com.rl_todo.ui.toolbox.SelectableText;
 import com.rl_todo.ui.toolbox.TreeNode;
 import com.rl_todo.ui.toolbox.TreeNodeItem;
 
@@ -14,10 +15,10 @@ public class MethodCategory extends TreeNode implements TreeNodeItem
 
     public MethodCategory(TodoPlugin aPlugin, String aText)
     {
-        super(new Selectable(aPlugin, aText, null));
+        super(new SelectableText(aPlugin, aText, null));
 
-        ((Selectable)myContent).SetOnSelection(this::Toggle);
-        ((Selectable)myContent).setUnderlined(true);
+        ((SelectableText)myContent).SetOnSelection(this::Toggle);
+        ((SelectableText)myContent).setUnderlined(true);
 
         myPlugin = aPlugin;
         myText = aText;
@@ -40,5 +41,17 @@ public class MethodCategory extends TreeNode implements TreeNodeItem
     @Override
     public int GetAnchorDepth() {
         return 8;
+    }
+
+    @Override
+    public boolean IsBefore(TreeNodeItem aOther)
+    {
+        if (aOther instanceof SelectableText)
+            return true;
+
+        if (aOther instanceof MethodCategory)
+            return myText.compareTo(((MethodCategory) aOther).myText) < 0;
+
+        return false;
     }
 }

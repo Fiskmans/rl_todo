@@ -1,21 +1,15 @@
 package com.rl_todo.ui;
 
 import com.rl_todo.*;
+import com.rl_todo.ui.toolbox.SelectableText;
 import net.runelite.api.Quest;
 import net.runelite.api.QuestState;
-import net.runelite.client.game.ChatIconManager;
-import net.runelite.client.game.SkillIconManager;
-import net.runelite.client.ui.ColorScheme;
-import net.runelite.client.ui.components.FlatTextField;
 
 import javax.swing.*;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -166,7 +160,7 @@ public class QuestSetupPopup extends JPopupMenu
                     name += quest.myGameQuest.getName();
 
 
-                    Selectable selectable = new Selectable(myPlugin, name, () -> {
+                    SelectableText selectableText = new SelectableText(myPlugin, name, () -> {
                         new Goal(myPlugin, IdBuilder.questId(quest.myGameQuest), 1, true, null);
                         myPlugin.myPanel.ResetContent();
                     });
@@ -174,17 +168,17 @@ public class QuestSetupPopup extends JPopupMenu
                     switch (quest.myState)
                     {
                         case NOT_STARTED:
-                            selectable.setForeground(Color.red);
+                            selectableText.setForeground(Color.red);
                             break;
                         case IN_PROGRESS:
-                            selectable.setForeground(Color.yellow);
+                            selectableText.setForeground(Color.yellow);
                             break;
                         case FINISHED:
-                            selectable.setForeground(Color.green);
+                            selectableText.setForeground(Color.green);
                             break;
                     }
 
-                    myQuestsPanel.add(selectable, questPanelConstraints);
+                    myQuestsPanel.add(selectableText, questPanelConstraints);
                     questPanelConstraints.gridy++;
                 }
 

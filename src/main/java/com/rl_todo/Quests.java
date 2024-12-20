@@ -1,5 +1,6 @@
 package com.rl_todo;
 
+import com.rl_todo.ui.IdBuilder;
 import net.runelite.api.Quest;
 import net.runelite.api.QuestState;
 
