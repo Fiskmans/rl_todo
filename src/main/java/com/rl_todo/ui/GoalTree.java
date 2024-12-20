@@ -34,7 +34,7 @@ public class GoalTree extends TreeNode implements GoalSubscriber, TreeNodeItem
 
     @Override
     public void OnSubGoalAdded(Goal aSubGoal) {
-        AddNode(new GoalTree(myPlugin, aSubGoal, myOnModified));
+        AddNode(new GoalTree(myPlugin, aSubGoal, myOnModified), true);
         myOnModified.run();
     }
 

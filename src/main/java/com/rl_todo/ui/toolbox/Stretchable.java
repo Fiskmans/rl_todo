@@ -8,6 +8,6 @@ public class Stretchable extends JPanel {
     {
         setMinimumSize(new Dimension(0,0));
         setPreferredSize(new Dimension(0,0));
-        setMaximumSize(new Dimension(1000000,1000000));
+        setMaximumSize(new Dimension(10000,10000));
     }
 }

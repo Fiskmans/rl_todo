@@ -46,14 +46,7 @@ public class Utilities {
                     return Optional.empty();
                 }
             case "quest":
-                for(Quest q : Quest.values())
-                {
-                    if (Integer.toString(q.getId()).equals(part))
-                    {
-                        return Optional.of(q.getName());
-                    }
-                }
-                return Optional.empty();
+                return Optional.of("Completion of " + part);
             case "xp":
                 return Optional.of(part.substring(0,1).toUpperCase() + part.substring(1).toLowerCase() + " xp");
             case "level":
@@ -71,6 +64,12 @@ public class Utilities {
                 return Alternative
                         .FromID(part)
                         .map(Alternative::getName);
+            case "progression":
+                switch (part)
+                {
+                    case "quest_points":
+                        return  Optional.of("Quest Point");
+                }
 
             default:
                 return Optional.empty();
@@ -100,14 +99,7 @@ public class Utilities {
                     return Optional.empty();
                 }
             case "quest":
-                for(Quest q : Quest.values())
-                {
-                    if (Integer.toString(q.getId()).equals(part))
-                    {
-                        return Optional.of(q.getName());
-                    }
-                }
-                return Optional.empty();
+                return Optional.of(part);
             case "xp":
                 return Optional.of("xp");
             case "level":
@@ -126,6 +118,12 @@ public class Utilities {
                         .FromID(part)
                         .map(Alternative::getName);
 
+            case "progression":
+                switch (part)
+                {
+                    case "quest_points":
+                        return  Optional.of("Quest Point");
+                }
             default:
                 return Optional.empty();
         }
@@ -198,6 +196,17 @@ public class Utilities {
             case "minigame":
                 return  myPlugin.mySpriteManager.getSprite(SpriteID.TAB_QUESTS_RED_MINIGAMES, 0);
 
+            case "any":
+                return Alternative
+                        .FromID(part)
+                        .map((a) -> IconFromID("item." + a.getAlternatives()[0], aStackSize))
+                        .orElse(myErrorImage);
+            case "progression":
+                switch (part)
+                {
+                    case "quest_points":
+                        return myPlugin.mySpriteManager.getSprite(SpriteID.TAB_QUESTS, 0);
+                }
             default:
                 return myErrorImage;
         }

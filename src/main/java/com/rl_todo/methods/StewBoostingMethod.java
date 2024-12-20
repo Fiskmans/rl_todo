@@ -14,7 +14,7 @@ public class StewBoostingMethod extends Method
     Skill mySkill;
     public StewBoostingMethod(Skill aSkill)
     {
-        super("Stew boost " + aSkill.getName(), "boost/stew");
+        super("Stew boost " + aSkill.getName(), "Boost/stew");
 
         myMakes.Add(IdBuilder.levelResource(aSkill, 1));
 

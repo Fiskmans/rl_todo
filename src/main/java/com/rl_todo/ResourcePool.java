@@ -1,7 +1,5 @@
 package com.rl_todo;
 
-import jdk.internal.joptsimple.util.KeyValuePair;
-
 import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -80,9 +78,7 @@ public class ResourcePool {
                 .entrySet()
                 .stream()
                 .map((kvPair) ->
-                        {
-                            return (int) Math.floor(aOther.GetSpecific(kvPair.getKey()) / kvPair.getValue());
-                        })
+                        (int) Math.floor(aOther.GetSpecific(kvPair.getKey()) / kvPair.getValue()))
                 .min(Integer::compare)
                 .orElse(0);
     }

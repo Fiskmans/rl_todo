@@ -49,6 +49,8 @@ public class GoalCollectionPanel extends JPanel
             if (((GoalTree)child).GetGoalUI().myGoal == aGoal)
             {
                 remove(child);
+                revalidate();
+                repaint();
                 return;
             }
         }
@@ -84,7 +86,7 @@ public class GoalCollectionPanel extends JPanel
         {
             if (serializedGoals.goals != null)
             {
-                serializedGoals.goals.forEach((goal) -> { AddGoal(Goal.FromSerialized(myPlugin, goal)); });
+                serializedGoals.goals.forEach((goal) -> AddGoal(Goal.FromSerialized(myPlugin, goal)));
             }
         }
     }

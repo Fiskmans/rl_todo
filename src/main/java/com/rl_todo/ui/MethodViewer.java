@@ -3,64 +3,49 @@ package com.rl_todo.ui;
 import com.rl_todo.TodoPlugin;
 import com.rl_todo.methods.Method;
 import com.rl_todo.ui.toolbox.Arrow;
+import com.rl_todo.ui.toolbox.Stretchable;
+import com.rl_todo.utils.AwaitUtils;
+import com.rl_todo.utils.Awaitable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Objects;
+import java.util.stream.Stream;
 
 public class MethodViewer extends JPanel {
 
-    public MethodViewer(TodoPlugin aPlugin, Method aMethod)
+    TodoPlugin myPlugin;
+
+    public MethodViewer(TodoPlugin aPlugin)
     {
-        setLayout(new GridBagLayout());
+        myPlugin = aPlugin;
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
+    }
 
-        GridBagConstraints labelConstraints = new GridBagConstraints();
-        labelConstraints.gridx = 0;
-        labelConstraints.gridy = 0;
-        labelConstraints.gridwidth = 3;
-        add(new JLabel(aMethod.myName), labelConstraints);
+    public void SetMethod(Method aMethod)
+    {
+        final ResourcePoolView requires = aMethod.myRequires.IsEmpty()  ? null : new ResourcePoolView(myPlugin, aMethod.myRequires, "Requires");
+        final ResourcePoolView takes    = aMethod.myTakes.IsEmpty()     ? null : new ResourcePoolView(myPlugin, aMethod.myTakes,    "Takes");
+        final ResourcePoolView makes    = aMethod.myMakes.IsEmpty()     ? null : new ResourcePoolView(myPlugin, aMethod.myMakes,    "Makes");
 
-        if (!aMethod.myRequires.IsEmpty())
-        {
-            GridBagConstraints requirementsConstraints = new GridBagConstraints();
+        AwaitUtils.WaitAll(
+            Stream.of(requires, takes, makes)
+                .filter(Objects::nonNull)
+                .map(ResourcePoolView::Await))
+            .WhenDone((sender) ->
+                SwingUtilities.invokeLater(() ->
+                {
+                    removeAll();
 
-            requirementsConstraints.gridx = 0;
-            requirementsConstraints.gridy = 1;
-            requirementsConstraints.gridwidth = 3;
-            requirementsConstraints.fill = GridBagConstraints.HORIZONTAL;
+                                                        add(new WrappingText(myPlugin, aMethod.GetName(), 230));
+                    if (requires != null)               add(requires);
+                    if (takes != null)                  add(takes);
+                    if (takes != null && makes != null) add(new Arrow());
+                    if (makes != null)                  add(makes);
+                                                        add(new Stretchable());
 
-            add(new ResourcePoolView(aPlugin, aMethod.myRequires, "Requires"), requirementsConstraints);
-        }
-
-        if (!aMethod.myTakes.IsEmpty())
-        {
-            GridBagConstraints takesConstraints = new GridBagConstraints();
-
-            takesConstraints.gridx = 0;
-            takesConstraints.gridy = 2;
-            takesConstraints.fill = GridBagConstraints.VERTICAL;
-
-            add(new ResourcePoolView(aPlugin, aMethod.myTakes, "Takes"), takesConstraints);
-        }
-
-        if (!aMethod.myTakes.IsEmpty() && !aMethod.myMakes.IsEmpty())
-        {
-            GridBagConstraints arrowConstraints = new GridBagConstraints();
-
-            arrowConstraints.gridx = 1;
-            arrowConstraints.gridy = 2;
-
-            add(new Arrow(), arrowConstraints);
-        }
-
-        if (!aMethod.myMakes.IsEmpty())
-        {
-            GridBagConstraints makesConstraints = new GridBagConstraints();
-
-            makesConstraints.gridx = 2;
-            makesConstraints.gridy = 2;
-            makesConstraints.fill = GridBagConstraints.VERTICAL;
-
-            add(new ResourcePoolView(aPlugin, aMethod.myMakes, "Makes"), makesConstraints);
-        }
+                    repaint();
+                    revalidate();
+                }));
     }
 }

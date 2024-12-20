@@ -19,12 +19,13 @@ public class TreeNode extends JPanel
         myContent = aContent;
     }
 
-    public <T extends JComponent & TreeNodeItem> void AddNode(T aNode)
+    public <T extends JComponent & TreeNodeItem> void AddNode(T aNode, boolean aStartVisible)
     {
         if (myBranch == null)
         {
             myBranch = new TreeBranch();
             myBranch.setAlignmentX(RIGHT_ALIGNMENT);
+            myBranch.setVisible(aStartVisible);
             add(myBranch);
         }
 
@@ -39,6 +40,18 @@ public class TreeNode extends JPanel
             remove(myBranch);
             myBranch = null;
         }
+    }
+
+    public void Expand()
+    {
+        if (myBranch != null)
+            myBranch.setVisible(true);
+    }
+
+    public void Collapse()
+    {
+        if (myBranch != null)
+            myBranch.setVisible(false);
     }
 
     public void Toggle()

@@ -1,10 +1,13 @@
-package com.rl_todo;
+package com.rl_todo.utils;
+
+import com.rl_todo.TodoPlugin;
+import net.runelite.client.ui.FontManager;
 
 import java.awt.*;
 
 public class DrawingUtils
 {
-    public static void DrawText(TodoPlugin aPlugin, Graphics g, String aText, int aX, int aY, boolean aRightAlign, boolean aTopAlign, Color aTextColor)
+    public static Dimension DrawText(TodoPlugin aPlugin, Graphics g, String aText, int aX, int aY, boolean aRightAlign, boolean aTopAlign, Color aTextColor)
     {
         char[] chars = new char[aText.length()];
         aText.getChars(0,aText.length(), chars, 0);
@@ -13,13 +16,15 @@ public class DrawingUtils
         int y = aY;
         FontMetrics m = g.getFontMetrics();
 
+        Dimension dims = new Dimension(m.charsWidth(chars,0, chars.length), m.getHeight());
+
         if (aRightAlign)
         {
-            x -= m.charsWidth(chars,0, chars.length);
+            x -= dims.width;
         }
         if (aTopAlign)
         {
-            y += m.getFont().getSize();
+            y += dims.height;
         }
 
         g.setColor(aPlugin.myConfig.textOutlineColor());
@@ -33,6 +38,8 @@ public class DrawingUtils
         else
             g.setColor(aPlugin.myConfig.textColor());
         g.drawChars(chars, 0, chars.length, x, y);
+
+        return dims;
     }
 
     public static Dimension MeasureText(Graphics g, String aText)

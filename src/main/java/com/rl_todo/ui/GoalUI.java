@@ -1,6 +1,6 @@
 package com.rl_todo.ui;
 
-import com.rl_todo.DrawingUtils;
+import com.rl_todo.utils.DrawingUtils;
 import com.rl_todo.Goal;
 import com.rl_todo.GoalSubscriber;
 import com.rl_todo.TodoPlugin;

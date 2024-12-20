@@ -3,30 +3,46 @@ package com.rl_todo.ui;
 import com.rl_todo.ResourcePool;
 import com.rl_todo.TodoPlugin;
 import com.rl_todo.ui.toolbox.Stretchable;
+import com.rl_todo.utils.AwaitUtils;
+import com.rl_todo.utils.Awaitable;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ResourcePoolView extends JPanel {
 
+    Awaitable myAwaitable = new Awaitable();
 
     public ResourcePoolView(TodoPlugin aPlugin, ResourcePool aPool, String myName)
     {
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
-        setBorder(new LineBorder(Color.gray,1,false));
+        setBorder(new LineBorder(Color.darkGray,1,true));
 
         add(new JLabel(myName));
         add(new JSeparator());
 
-        aPool   .All()
+        List<ResourceView> resources = aPool.All()
                 .stream()
                 .sorted(Comparator.comparing(Map.Entry<String,Float>::getKey))
-                .forEach((kvPair) -> add(new ResourceView(aPlugin, kvPair.getKey(), kvPair.getValue())));
+                .map((kvPair) -> new ResourceView(aPlugin, kvPair.getKey(), kvPair.getValue()))
+                .collect(Collectors.toList());
 
-        add(new Stretchable());
+        resources.forEach(this::add);
+
+        setMaximumSize(new Dimension(230, 1000));
+
+        AwaitUtils.WaitAll(resources.stream().map(ResourceView::Await))
+                .WhenDone((sender) -> myAwaitable.SetDone());
+    }
+
+    public Awaitable Await()
+    {
+        return myAwaitable;
     }
 }
