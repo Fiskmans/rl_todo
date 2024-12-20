@@ -2,7 +2,7 @@ package com.rl_todo.ui;
 
 import com.rl_todo.*;
 import com.rl_todo.methods.Method;
-import com.rl_todo.ui.toolbox.SelectableText;
+import com.rl_todo.ui.toolbox.ClickableText;
 
 import javax.swing.*;
 import java.awt.*;
@@ -111,16 +111,14 @@ public class MethodSelectorPanel extends JPanel
                 at = at.GetOrCreateChild(key);
             }
 
-            SelectableText selector = new SelectableText(myPlugin, aMethod.myName, () ->
+            ClickableText selector = new ClickableText(myPlugin, aMethod.myName, (text) ->
             {
                 if (myOnSelected != null)
-                {
                     myOnSelected.accept(aMethod);
-                }
 
                 myViewer.SetMethod(aMethod);
                 myIsPinned = true;
-            });
+            }, false);
 
 
             selector.addMouseListener(new MouseListener() {

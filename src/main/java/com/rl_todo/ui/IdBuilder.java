@@ -51,7 +51,20 @@ public class IdBuilder extends JPanel
 
     IdBuilder(TodoPlugin aPlugin, Consumer<String> aConsumer)
     {
+        setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
+        WrappingText currentId = new WrappingText(aPlugin, "", 230);
+
+        add(currentId);
+
+        {
+            JPanel builderPanel = new JPanel();
+            builderPanel.setLayout(new BoxLayout(builderPanel, BoxLayout.X_AXIS));
+
+
+
+            add(builderPanel);
+        }
     }
 
 

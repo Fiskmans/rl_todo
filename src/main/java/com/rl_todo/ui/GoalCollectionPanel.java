@@ -21,7 +21,6 @@ public class GoalCollectionPanel extends JPanel
 
     public GoalCollectionPanel(TodoPlugin aPlugin)
     {
-        super();
         myPlugin = aPlugin;
         myLayout = new BoxLayout(this, BoxLayout.PAGE_AXIS);
 

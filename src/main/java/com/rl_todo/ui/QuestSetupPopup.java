@@ -1,7 +1,7 @@
 package com.rl_todo.ui;
 
 import com.rl_todo.*;
-import com.rl_todo.ui.toolbox.SelectableText;
+import com.rl_todo.ui.toolbox.ClickableText;
 import net.runelite.api.Quest;
 import net.runelite.api.QuestState;
 
@@ -160,10 +160,10 @@ public class QuestSetupPopup extends JPopupMenu
                     name += quest.myGameQuest.getName();
 
 
-                    SelectableText selectableText = new SelectableText(myPlugin, name, () -> {
+                    ClickableText selectableText = new ClickableText(myPlugin, name, (text) -> {
                         new Goal(myPlugin, IdBuilder.questId(quest.myGameQuest), 1, true, null);
                         myPlugin.myPanel.ResetContent();
-                    });
+                    }, false);
 
                     switch (quest.myState)
                     {

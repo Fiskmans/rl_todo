@@ -28,9 +28,7 @@ public class GoalViewPanel extends JPanel
         JButton addGoalButton = new JButton("Add Goal");
         addGoalButton.addActionListener(e -> {
             TodoPlugin.debug("Open add goal", 3);
-            new AddGoalPopup(myPlugin)
-                .OnDone((goal) -> myGoals.AddGoal(goal))
-                .show(addGoalButton, -400,0);
+            // TODO: Add goal
         });
 
         addGoalButton.setAlignmentX(0.0f);

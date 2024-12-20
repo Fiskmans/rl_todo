@@ -1,7 +1,7 @@
 package com.rl_todo.ui;
 
 import com.rl_todo.TodoPlugin;
-import com.rl_todo.ui.toolbox.SelectableText;
+import com.rl_todo.ui.toolbox.ClickableText;
 import com.rl_todo.ui.toolbox.TreeNode;
 import com.rl_todo.ui.toolbox.TreeNodeItem;
 
@@ -15,10 +15,9 @@ public class MethodCategory extends TreeNode implements TreeNodeItem
 
     public MethodCategory(TodoPlugin aPlugin, String aText)
     {
-        super(new SelectableText(aPlugin, aText, null));
+        super(new ClickableText(aPlugin, aText, null, true));
 
-        ((SelectableText)myContent).SetOnSelection(this::Toggle);
-        ((SelectableText)myContent).setUnderlined(true);
+        ((ClickableText)myContent).myOnClick = (text) -> Toggle();
 
         myPlugin = aPlugin;
         myText = aText;
@@ -46,7 +45,7 @@ public class MethodCategory extends TreeNode implements TreeNodeItem
     @Override
     public boolean IsBefore(TreeNodeItem aOther)
     {
-        if (aOther instanceof SelectableText)
+        if (aOther instanceof ClickableText)
             return true;
 
         if (aOther instanceof MethodCategory)
