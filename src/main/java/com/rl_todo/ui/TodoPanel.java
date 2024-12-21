@@ -1,6 +1,7 @@
 package com.rl_todo.ui;
 
 import com.rl_todo.TodoPlugin;
+import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
 
 import javax.swing.*;
@@ -34,13 +35,15 @@ public class TodoPanel extends PluginPanel
         setBorder(new EmptyBorder(3, 4, 3, 3));
         setLayout(new GridBagLayout());
 
-        final GridBagConstraints headerContraints = new GridBagConstraints();
-        headerContraints.fill = GridBagConstraints.HORIZONTAL;
-        headerContraints.weightx = 1;
-        headerContraints.gridx = 0;
-        headerContraints.gridy = 0;
+        final GridBagConstraints headerConstraints = new GridBagConstraints();
+        headerConstraints.fill = GridBagConstraints.HORIZONTAL;
+        headerConstraints.weightx = 1;
+        headerConstraints.gridx = 0;
+        headerConstraints.gridy = 0;
 
-        add(myTodoHeader, headerContraints);
+        myTodoHeader.setFont(FontManager.getRunescapeFont().deriveFont(50.f));
+
+        add(myTodoHeader, headerConstraints);
 
         myBackButton.addActionListener(e -> ResetContent());
         myBackButton.setVisible(false);
@@ -76,6 +79,8 @@ public class TodoPanel extends PluginPanel
         myBackButton.setVisible(true);
         myContentArea.removeAll();
         myContentArea.add(aPanel, BorderLayout.CENTER);
+        revalidate();
+        repaint();
     }
 
     public void ResetContent()

@@ -12,6 +12,7 @@ import com.rl_todo.methods.MethodManager;
 import com.rl_todo.ui.TodoPanel;
 import com.rl_todo.ui.Utilities;
 import com.rl_todo.ui.toolbox.TreeBranch;
+import com.rl_todo.ui.IdBuilder;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.events.*;
@@ -133,8 +134,6 @@ public class TodoPlugin extends Plugin
 	{
 		debug("startUp", 1);
 
-		TreeBranch.Indent = 10;
-		TreeBranch.ArcRadius = 3;
 		TreeBranch.myNormalColor = myConfig.treeColor();
 
 		myGlobalInstance = this;
@@ -166,7 +165,7 @@ public class TodoPlugin extends Plugin
 	}
 
 	@Override
-	protected void shutDown() throws Exception
+	protected void shutDown()
 	{
 		debug("shutDown", 1);
 
@@ -345,7 +344,5 @@ public class TodoPlugin extends Plugin
 		{
 			IgnorableError("Failed to save goals to " + DATA_FILE);
 		}
-
-		log.info(content);
 	}
 }

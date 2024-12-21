@@ -1,6 +1,7 @@
 package com.rl_todo.ui;
 
 import com.rl_todo.TodoPlugin;
+import com.rl_todo.ui.toolbox.Stretchable;
 import net.runelite.api.ItemID;
 
 import javax.swing.*;
@@ -13,12 +14,15 @@ public class GoalViewPanel extends JPanel
 {
     public GoalCollectionPanel myGoals;
     TodoPlugin myPlugin;
+    JPanel myViewed;
 
     public GoalViewPanel(TodoPlugin aPlugin)
     {
-        super();
         myPlugin = aPlugin;
         myGoals = new GoalCollectionPanel(myPlugin);
+
+        myViewed = new JPanel();
+        myViewed.setLayout(new BorderLayout());
 
         JPanel buttonPanel = new JPanel();
         buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
@@ -26,12 +30,7 @@ public class GoalViewPanel extends JPanel
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
         JButton addGoalButton = new JButton("Add Goal");
-        addGoalButton.addActionListener(e -> {
-            TodoPlugin.debug("Open add goal", 3);
-            new AddGoalPopup(myPlugin)
-                .OnDone((goal) -> myGoals.AddGoal(goal))
-                .show(addGoalButton, -400,0);
-        });
+        addGoalButton.addActionListener(e -> SetView(new GoalBuilder(myPlugin, (goal) -> { myGoals.AddGoal(goal); SetView(myGoals); }, () -> SetView(myGoals))));
 
         addGoalButton.setAlignmentX(0.0f);
 
@@ -74,8 +73,24 @@ public class GoalViewPanel extends JPanel
         });
 
         add(statusPanel);
+        add(new JSeparator());
 
-        add(new JScrollPane(myGoals, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
+        {
+            JPanel window = new JPanel();
+            window.setLayout(new BorderLayout());
+            window.add(new JScrollPane(myViewed, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED));
+            add(window);
+        }
+
+        SetView(myGoals);
+    }
+
+    private void SetView(JComponent aComponent)
+    {
+        myViewed.removeAll();
+        myViewed.add(aComponent, BorderLayout.NORTH);
+        revalidate();
+        repaint();
     }
 
 }

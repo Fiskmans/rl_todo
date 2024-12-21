@@ -4,11 +4,10 @@ import com.rl_todo.TodoPlugin;
 import com.rl_todo.methods.Method;
 import com.rl_todo.ui.toolbox.Arrow;
 import com.rl_todo.ui.toolbox.Stretchable;
+import com.rl_todo.ui.toolbox.WrappingText;
 import com.rl_todo.utils.AwaitUtils;
-import com.rl_todo.utils.Awaitable;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.Objects;
 import java.util.stream.Stream;
 

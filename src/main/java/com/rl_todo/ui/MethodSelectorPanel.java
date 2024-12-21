@@ -2,21 +2,16 @@ package com.rl_todo.ui;
 
 import com.rl_todo.*;
 import com.rl_todo.methods.Method;
-import joptsimple.util.KeyValuePair;
+import com.rl_todo.ui.toolbox.Category;
+import com.rl_todo.ui.toolbox.ClickableText;
 
 import javax.swing.*;
-import javax.swing.border.CompoundBorder;
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
-import javax.xml.crypto.dsig.keyinfo.KeyValue;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class MethodSelectorPanel extends JPanel
@@ -29,7 +24,7 @@ public class MethodSelectorPanel extends JPanel
 
     Consumer<Method> myOnSelected;
 
-    HashMap<String, MethodCategory> myRootCategories = new HashMap<>();
+    HashMap<String, Category> myRootCategories = new HashMap<>();
 
     MethodSelectorPanel(TodoPlugin aPlugin, String aFilterByProduct)
     {
@@ -92,7 +87,7 @@ public class MethodSelectorPanel extends JPanel
 
         SwingUtilities.invokeLater(() ->
         {
-            MethodCategory at = null;
+            Category at = null;
 
             for (String key : parts)
             {
@@ -100,7 +95,7 @@ public class MethodSelectorPanel extends JPanel
                 {
                     if (!myRootCategories.containsKey(key))
                     {
-                        at = new MethodCategory(myPlugin, key);
+                        at = new Category(myPlugin, key);
                         myRootCategories.put(key, at);
 
                         at.setAlignmentX(LEFT_ALIGNMENT);
@@ -117,16 +112,14 @@ public class MethodSelectorPanel extends JPanel
                 at = at.GetOrCreateChild(key);
             }
 
-            SelectableMethod selector = new SelectableMethod(myPlugin, aMethod, () ->
+            ClickableText selector = new ClickableText(myPlugin, aMethod.myName, (text) ->
             {
                 if (myOnSelected != null)
-                {
                     myOnSelected.accept(aMethod);
-                }
 
                 myViewer.SetMethod(aMethod);
                 myIsPinned = true;
-            });
+            }, false);
 
 
             selector.addMouseListener(new MouseListener() {

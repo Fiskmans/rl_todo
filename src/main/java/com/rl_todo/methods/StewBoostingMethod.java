@@ -1,13 +1,10 @@
 package com.rl_todo.methods;
 
 import com.rl_todo.*;
-import net.runelite.api.Item;
+import com.rl_todo.ui.IdBuilder;
 import net.runelite.api.ItemID;
 import net.runelite.api.Quest;
 import net.runelite.api.Skill;
-
-import java.util.Arrays;
-import java.util.List;
 
 public class StewBoostingMethod extends Method
 {

@@ -63,7 +63,7 @@ public class ResourceView extends JPanel {
 
         g.drawImage(myIcon, 1,1, 17, 17, null);
 
-        DrawingUtils.DrawText(myPlugin,g, myText, 18, 17, false, false, null);
+        DrawingUtils.DrawText(myPlugin,g, myText, 20, 17, false, false, null);
     }
 
     public Awaitable Await()

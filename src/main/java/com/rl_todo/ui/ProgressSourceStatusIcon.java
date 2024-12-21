@@ -19,7 +19,6 @@ public class ProgressSourceStatusIcon extends JPanel implements ProgressSourceSt
 
     ProgressSourceStatusIcon(TodoPlugin aPlugin, ProgressSource aSource, BufferedImage aIcon)
     {
-        super();
         myPlugin = aPlugin;
         mySource = aSource;
 
