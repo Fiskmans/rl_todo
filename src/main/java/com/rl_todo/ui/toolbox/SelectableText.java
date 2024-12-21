@@ -12,6 +12,7 @@ public class SelectableText extends ClickableText implements Selectable {
     public SelectableText(TodoPlugin aPlugin, String aText, Runnable aOnSelect) {
         super(aPlugin, aText, null, false);
         myOnClick = (text) -> this.SetSelected(!myIsSelected);
+        myOnSelected = aOnSelect;
     }
 
     @Override

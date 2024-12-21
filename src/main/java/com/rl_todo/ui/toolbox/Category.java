@@ -1,19 +1,16 @@
-package com.rl_todo.ui;
+package com.rl_todo.ui.toolbox;
 
 import com.rl_todo.TodoPlugin;
-import com.rl_todo.ui.toolbox.ClickableText;
-import com.rl_todo.ui.toolbox.TreeNode;
-import com.rl_todo.ui.toolbox.TreeNodeItem;
 
 import java.util.HashMap;
 
-public class MethodCategory extends TreeNode implements TreeNodeItem
+public class Category extends TreeNode implements TreeNodeItem
 {
-    HashMap<String, MethodCategory> myChildren = new HashMap<>();
+    HashMap<String, Category> myChildren = new HashMap<>();
     TodoPlugin myPlugin;
     String myText;
 
-    public MethodCategory(TodoPlugin aPlugin, String aText)
+    public Category(TodoPlugin aPlugin, String aText)
     {
         super(new ClickableText(aPlugin, aText, null, true));
 
@@ -23,12 +20,12 @@ public class MethodCategory extends TreeNode implements TreeNodeItem
         myText = aText;
     }
 
-    MethodCategory GetOrCreateChild(String aKey)
+    public Category GetOrCreateChild(String aKey)
     {
         if (myChildren.containsKey(aKey))
             return myChildren.get(aKey);
 
-        MethodCategory created = new MethodCategory(myPlugin, aKey);
+        Category created = new Category(myPlugin, aKey);
         myChildren.put(aKey, created);
 
         created.setAlignmentX(RIGHT_ALIGNMENT);
@@ -48,8 +45,8 @@ public class MethodCategory extends TreeNode implements TreeNodeItem
         if (aOther instanceof ClickableText)
             return true;
 
-        if (aOther instanceof MethodCategory)
-            return myText.compareTo(((MethodCategory) aOther).myText) < 0;
+        if (aOther instanceof Category)
+            return myText.compareTo(((Category) aOther).myText) < 0;
 
         return false;
     }

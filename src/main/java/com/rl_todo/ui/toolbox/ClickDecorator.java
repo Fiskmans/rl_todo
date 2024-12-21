@@ -7,12 +7,12 @@ import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
 
-public class Clickable<T extends JComponent> extends JPanel
+public class ClickDecorator<T extends JComponent> extends JPanel
 {
     public T myInner;
     Consumer<T> myConsumer;
 
-    Clickable(T aInner, Consumer<T> aConsumer)
+    ClickDecorator(T aInner, Consumer<T> aConsumer)
     {
         setLayout(new BorderLayout());
         add(aInner, BorderLayout.CENTER);
@@ -20,7 +20,7 @@ public class Clickable<T extends JComponent> extends JPanel
         myInner = aInner;
         myConsumer = aConsumer;
 
-        addMouseListener(new MouseAdapter() {
+        MouseAdapter adapter = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
 
@@ -29,6 +29,15 @@ public class Clickable<T extends JComponent> extends JPanel
 
                 myConsumer.accept(aInner);
             }
-        });
+        };
+
+        myInner.addMouseListener(adapter);
     }
+
+    @Override
+    public Dimension getMinimumSize() { return myInner.getMinimumSize(); }
+    @Override
+    public Dimension getPreferredSize() { return myInner.getPreferredSize(); }
+    @Override
+    public Dimension getMaximumSize() { return myInner.getMaximumSize(); }
 }

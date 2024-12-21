@@ -123,11 +123,11 @@ public class Goal implements ProgressTracker
         if (aMethod.takes != null)
         {
             aMethod.takes.forEach((id, subMethod) ->
-                    myChildren.forEach((child) ->
-                    {
-                        if (child.myId.equals(id))
-                            child.FillInMethod(subMethod);
-                    }));
+                myChildren.forEach((child) ->
+                {
+                    if (child.myId.equals(id))
+                        child.FillInMethod(subMethod);
+                }));
         }
 
         if (aMethod.requires != null)

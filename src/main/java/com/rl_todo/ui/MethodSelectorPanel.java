@@ -2,6 +2,7 @@ package com.rl_todo.ui;
 
 import com.rl_todo.*;
 import com.rl_todo.methods.Method;
+import com.rl_todo.ui.toolbox.Category;
 import com.rl_todo.ui.toolbox.ClickableText;
 
 import javax.swing.*;
@@ -23,7 +24,7 @@ public class MethodSelectorPanel extends JPanel
 
     Consumer<Method> myOnSelected;
 
-    HashMap<String, MethodCategory> myRootCategories = new HashMap<>();
+    HashMap<String, Category> myRootCategories = new HashMap<>();
 
     MethodSelectorPanel(TodoPlugin aPlugin, String aFilterByProduct)
     {
@@ -86,7 +87,7 @@ public class MethodSelectorPanel extends JPanel
 
         SwingUtilities.invokeLater(() ->
         {
-            MethodCategory at = null;
+            Category at = null;
 
             for (String key : parts)
             {
@@ -94,7 +95,7 @@ public class MethodSelectorPanel extends JPanel
                 {
                     if (!myRootCategories.containsKey(key))
                     {
-                        at = new MethodCategory(myPlugin, key);
+                        at = new Category(myPlugin, key);
                         myRootCategories.put(key, at);
 
                         at.setAlignmentX(LEFT_ALIGNMENT);

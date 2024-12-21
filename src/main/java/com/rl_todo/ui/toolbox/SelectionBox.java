@@ -2,7 +2,6 @@ package com.rl_todo.ui.toolbox;
 
 import javax.annotation.Nullable;
 import javax.swing.*;
-import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -14,15 +13,20 @@ public class SelectionBox extends JPanel
     //Implements Selectable
     JComponent mySelected;
 
-    SelectionBox(Consumer<JComponent> aOnSelectionChanged)
+    public SelectionBox(Consumer<JComponent> aOnSelectionChanged)
     {
         myOnSelectionChanged = aOnSelectionChanged;
         mySelected = null;
     }
 
-    public <T extends JComponent & Selectable> void Add(T aComponent, Object aConstraints)
+    public <T extends JComponent & Selectable> void AddSelectable(T aComponent, Object aConstraints)
     {
-        add(new Clickable<>(aComponent, this::Select), aConstraints);
+        add(new ClickDecorator<>(aComponent, this::Select), aConstraints);
+    }
+
+    public <T extends JComponent & Selectable> void AddSelectable(T aComponent)
+    {
+        add(new ClickDecorator<>(aComponent, this::Select));
     }
 
     public Optional<JComponent> GetSelection()
@@ -42,6 +46,8 @@ public class SelectionBox extends JPanel
 
         aComponent.SetSelected(true);
         mySelected = aComponent;
+
+        myOnSelectionChanged.accept(mySelected);
     }
 
 }

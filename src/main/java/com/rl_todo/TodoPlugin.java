@@ -165,7 +165,7 @@ public class TodoPlugin extends Plugin
 	}
 
 	@Override
-	protected void shutDown() throws Exception
+	protected void shutDown()
 	{
 		debug("shutDown", 1);
 
@@ -344,7 +344,5 @@ public class TodoPlugin extends Plugin
 		{
 			IgnorableError("Failed to save goals to " + DATA_FILE);
 		}
-
-		log.info(content);
 	}
 }

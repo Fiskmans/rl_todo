@@ -1,4 +1,4 @@
-package com.rl_todo.ui;
+package com.rl_todo.ui.toolbox;
 
 import com.rl_todo.TodoPlugin;
 import com.rl_todo.utils.DrawingUtils;
@@ -17,7 +17,7 @@ public class WrappingText extends JPanel
     int myWidth;
     List<String> myLines;
 
-    WrappingText(TodoPlugin aPlugin, String aText, int aWidth)
+    public WrappingText(TodoPlugin aPlugin, String aText, int aWidth)
     {
         myPlugin = aPlugin;
         myWidth = aWidth;

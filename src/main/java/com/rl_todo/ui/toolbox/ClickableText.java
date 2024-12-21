@@ -3,7 +3,6 @@ package com.rl_todo.ui.toolbox;
 import com.rl_todo.utils.DrawingUtils;
 import com.rl_todo.TodoPlugin;
 
-import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import java.awt.*;
@@ -11,11 +10,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
-public class ClickableText extends Clickable<Stretchable> implements TreeNodeItem
+public class ClickableText extends ClickDecorator<Stretchable> implements TreeNodeItem
 {
     TodoPlugin myPlugin;
     String myText;
-    boolean myIsUnderlined = false;
+    boolean myIsUnderlined;
     public Consumer<String> myOnClick;
 
     public ClickableText(TodoPlugin aPlugin, String aText, Consumer<String> aOnClick, boolean aUnderlined)
@@ -26,13 +25,9 @@ public class ClickableText extends Clickable<Stretchable> implements TreeNodeIte
         super.myConsumer = (panel) -> myOnClick.accept(aText);
         myPlugin = aPlugin;
         myText = aText;
-        myIsUnderlined = true;
+        myIsUnderlined = aUnderlined;
 
         setBorder(new EmptyBorder(1,1,1,1));
-
-        setMaximumSize(new Dimension(400, 20));
-        setPreferredSize(new Dimension(200, 20));
-        setMinimumSize(new Dimension(200, 20));
 
         myInner.addMouseListener(new MouseAdapter() {
             @Override
