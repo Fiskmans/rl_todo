@@ -23,10 +23,6 @@ public class QuestIdBuilder extends JPanel
         myPlugin = aPlugin;
         myConsumer = aConsumer;
 
-        setMinimumSize(new Dimension(220, 500));
-        setPreferredSize(new Dimension(220, 500));
-        setMaximumSize(new Dimension(220, 500));
-
         setLayout(new BorderLayout());
 
         JPanel innerPanel = new JPanel();

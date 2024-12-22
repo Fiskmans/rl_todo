@@ -122,7 +122,7 @@ public class GoalViewPanel extends JPanel
     {
         myViewed.remove(myGoals); // preserve this component from the devastation that is fastRemoveAll
         SwingUtil.fastRemoveAll(myViewed);
-        myViewed.add(aComponent, BorderLayout.NORTH);
+        myViewed.add(aComponent, BorderLayout.CENTER);
         revalidate();
         repaint();
     }

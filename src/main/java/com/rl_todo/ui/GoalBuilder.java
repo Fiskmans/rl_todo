@@ -36,16 +36,20 @@ public class GoalBuilder extends JPanel
         title.setBackground(Color.red);
         add(title);
 
+        JPanel idStretcher = new JPanel();
+        idStretcher.setLayout(new BorderLayout());
+
         add(new IdBuilder(aPlugin, (id) -> {
             myId = id;
             RefreshPreview();
-        }));
+        }), BorderLayout.CENTER);
 
         add(new JSeparator());
 
 
         JPanel targetPanel = new JPanel();
         targetPanel.setLayout(new BoxLayout(targetPanel, BoxLayout.X_AXIS));
+        targetPanel.setMaximumSize(new Dimension(400, 30));
         {
             targetPanel.add(new JLabel("Target:"));
             JTextField targetInput = new JTextField("1");

@@ -11,24 +11,24 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.function.Consumer;
 
-public class LevelIdBuilder extends SelectionBox
+public class LevelIdBuilder extends JPanel
 {
     TodoPlugin myPlugin;
     Consumer<String> myConsumer;
 
+    SelectionBox myInner;
+
     public LevelIdBuilder(TodoPlugin aPlugin, Consumer<String> aConsumer)
     {
-        super((selected) -> aConsumer.accept(selected.getName()));
         myPlugin = aPlugin;
         myConsumer = aConsumer;
+        myInner = new SelectionBox((selected) -> aConsumer.accept(selected.getName()));
+        myInner.setLayout(new GridLayout(0, 8));
 
-        setLayout(new GridLayout(0, 8));
+        setLayout(new FlowLayout());
+        add(myInner);
 
-        Dimension iconSize = new Dimension(20,28);
-
-        setMinimumSize(iconSize);
-        setPreferredSize(new Dimension(iconSize.width * 8, iconSize.height * 3));
-        setMaximumSize(new Dimension(iconSize.width * 8, iconSize.height * 5));
+        Dimension iconSize = new Dimension(25,28);
 
         for (Skill skill : Skill.values())
         {
@@ -38,7 +38,7 @@ public class LevelIdBuilder extends SelectionBox
 
             image.setName(IdBuilder.levelId(skill));
 
-            AddSelectable(image);
+            myInner.AddSelectable(image);
         }
     }
 }
