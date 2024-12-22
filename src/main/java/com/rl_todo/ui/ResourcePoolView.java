@@ -3,6 +3,7 @@ package com.rl_todo.ui;
 import com.rl_todo.ResourcePool;
 import com.rl_todo.TodoPlugin;
 import com.rl_todo.ui.toolbox.Stretchable;
+import com.rl_todo.ui.toolbox.VerticalStrut;
 import com.rl_todo.utils.AwaitUtils;
 import com.rl_todo.utils.Awaitable;
 
@@ -34,6 +35,8 @@ public class ResourcePoolView extends JPanel {
                 .collect(Collectors.toList());
 
         resources.forEach(this::add);
+
+        add(new VerticalStrut(5));
 
         setMaximumSize(new Dimension(230, 1000));
 

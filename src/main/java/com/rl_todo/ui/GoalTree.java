@@ -3,6 +3,7 @@ package com.rl_todo.ui;
 import com.rl_todo.GoalSubscriber;
 import com.rl_todo.Goal;
 import com.rl_todo.TodoPlugin;
+import com.rl_todo.ui.toolbox.ClickDecorator;
 import com.rl_todo.ui.toolbox.TreeNode;
 import com.rl_todo.ui.toolbox.TreeNodeItem;
 
@@ -16,7 +17,9 @@ public class GoalTree extends TreeNode implements GoalSubscriber, TreeNodeItem
 
     public GoalTree(TodoPlugin aPlugin, Goal aGoal, Runnable aOnModified)
     {
-        super(new GoalUI(aPlugin, aGoal));
+        super(null);
+
+        SetContent(new ClickDecorator<>(new GoalUI(aPlugin, aGoal), (sender) -> Toggle()));
 
         myPlugin = aPlugin;
         myOnModified = aOnModified;

@@ -25,17 +25,18 @@ import net.runelite.client.game.chatbox.ChatboxItemSearch;
 import net.runelite.client.game.chatbox.ChatboxTextInput;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.plugins.achievementdiary.QuestPointRequirement;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.util.ImageUtil;
 import static net.runelite.client.RuneLite.RUNELITE_DIR;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.List;
 
 @Slf4j
 @PluginDescriptor(
@@ -147,6 +148,8 @@ public class TodoPlugin extends Plugin
 				.panel(myPanel)
 				.build();
 
+		myClientToolbar.addNavigation(myNavButton);
+
 		for(Field field : mySources.getClass().getDeclaredFields())
 		{
 			if (field.getType() == ProgressSource.class)
@@ -159,8 +162,6 @@ public class TodoPlugin extends Plugin
 		{
 			myQuest = new Quests(this);
 			myMethodManager = new MethodManager(this);
-
-			SwingUtilities.invokeLater(() -> myClientToolbar.addNavigation(myNavButton));
 		});
 
 		Load();
@@ -191,9 +192,7 @@ public class TodoPlugin extends Plugin
 				case HOPPING:
 				case LOADING:
 				case CONNECTION_LOST:
-					break;
 				case LOGGED_IN:
-					OnLogin();
 					break;
 				default:
 					myIsLoaded = false;
@@ -280,24 +279,21 @@ public class TodoPlugin extends Plugin
 			Save();
 			myWantsSave = false;
 		}
+
+		if (myClient.getGameState() == GameState.LOGGED_IN && !myIsLoaded)
+		{
+			myIsLoaded = true;
+
+			myQuest.Load();
+			mySources.RefreshNMZ(this);
+			mySources.RefreshLevels(this);
+		}
 	}
 
 	@Provides
 	TodoConfig provideConfig(ConfigManager configManager)
 	{
 		return configManager.getConfig(TodoConfig.class);
-	}
-
-	private void OnLogin()
-	{
-		if (myIsLoaded)
-			return;
-
-		myIsLoaded = true;
-
-		myQuest.Load();
-		mySources.RefreshNMZ(this);
-		mySources.RefreshLevels(this);
 	}
 
 	public void RequestSave()

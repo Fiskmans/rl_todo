@@ -1,7 +1,6 @@
 package com.rl_todo;
 
 import java.util.*;
-import java.util.concurrent.Future;
 
 public class ProgressSource
 {
@@ -12,7 +11,7 @@ public class ProgressSource
     }
 
     private Status myStatus = Status.NOT_SYNCED;
-    private Map<String, Integer> myProgress = new HashMap<>();
+    private ResourcePool myProgress = new ResourcePool();
     private ProgressManager myManager;
     private String myName;
     private List<ProgressSourceStatusTracker> myStatusSubscribers = new ArrayList<>();
@@ -41,6 +40,11 @@ public class ProgressSource
         return myName;
     }
 
+    public ResourcePool All()
+    {
+        return myProgress;
+    }
+
     private void SetStatus(Status aStatus)
     {
         if (aStatus.equals(myStatus))
@@ -65,42 +69,29 @@ public class ProgressSource
         myManager = aManager;
     }
 
-    public int GetProgress(String aId)
+    public float GetProgress(String aId)
     {
-        return  myProgress.getOrDefault(aId, 0);
+        return myProgress.GetSpecific(aId);
     }
 
     public Set<String> GetAllKeys()
     {
-        return myProgress.keySet();
+        return myProgress.Ids();
     }
 
     public void Reset()
     {
-        Set<String> keys = myProgress.keySet();
-        myProgress.clear();
+        Set<String> keys = myProgress.Ids();
+        myProgress.Clear();
 
-        keys.stream().map((String aKey) -> { myManager.CountUpdated(aKey); return true; } );
+        keys.forEach((String aKey) -> myManager.CountUpdated(aKey));
     }
 
     public void SetProgress(String aId, int aCount)
     {
         SetStatus(Status.SYNCED);
 
-        int c = GetProgress(aId);
-        if (c == aCount)
-            return;
-
-        if (aCount == 0)
-        {
-            myProgress.remove(aId);
-        }
-        else
-        {
-            myProgress.put(aId, aCount);
-        }
-        myManager.CountUpdated(aId);
-
-        TodoPlugin.debug(myName + ": " + aId + " " + c + " -> " + aCount, 4);
+        if (myProgress.Set(aId, aCount))
+            myManager.CountUpdated(aId);
     }
 }

@@ -3,6 +3,7 @@ package com.rl_todo;
 import com.rl_todo.ui.IdBuilder;
 import net.runelite.api.Quest;
 import net.runelite.api.QuestState;
+import net.runelite.api.VarPlayer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,6 +42,8 @@ public class Quests
         {
             myPlugin.mySources.Quests.SetProgress(IdBuilder.questId(quest), (quest.getState(myPlugin.myClient) == QuestState.FINISHED) ? 1 : 0);
         }
+
+        myPlugin.mySources.Quests.SetProgress(IdBuilder.QUEST_POINTS, myPlugin.myClient.getVarpValue(VarPlayer.QUEST_POINTS));
 
     }
 }
