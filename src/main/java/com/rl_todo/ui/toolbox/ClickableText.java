@@ -65,4 +65,11 @@ public class ClickableText extends ClickDecorator<Stretchable> implements TreeNo
     public int GetAnchorDepth() {
         return 10;
     }
+
+    @Override
+    public Dimension getMinimumSize() { return new Dimension(200, 20); }
+    @Override
+    public Dimension getPreferredSize() { return new Dimension(200, 20); }
+    @Override
+    public Dimension getMaximumSize() { return new Dimension(800, 20); }
 }

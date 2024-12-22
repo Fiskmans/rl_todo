@@ -60,7 +60,6 @@ public class TodoPanel extends PluginPanel
 
         myContentArea = new JPanel();
         myContentArea.setLayout(new BorderLayout());
-        myContentArea.setBackground(Color.RED);
 
         final GridBagConstraints contentConstraints = new GridBagConstraints();
         contentConstraints.fill = GridBagConstraints.BOTH;
@@ -89,5 +88,7 @@ public class TodoPanel extends PluginPanel
         myBackButton.setVisible(false);
         myContentArea.removeAll();
         myContentArea.add(myDefaultContent, BorderLayout.CENTER);
+        revalidate();
+        repaint();
     }
 }

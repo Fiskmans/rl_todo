@@ -39,6 +39,8 @@ public class MethodManager
         myJsonParser = new JsonParser();
 
         LoadFromConfig();
+        for (Skill skill : Skill.values())
+            AddMethod(new LevelMethod(myPlugin, skill));
 
         TodoPlugin.debug("Loaded " + myMethods.size() + " recipes", 1);
     }
@@ -67,6 +69,8 @@ public class MethodManager
                 @Override
                 public void onResponse(@NonNull Call call, @NonNull Response response){
                     LoadFromString(aPath, response.body().charStream());
+
+                    TodoPlugin.debug("Loaded " + myMethods.size() + " recipes", 1);
                 }
             });
             return;
@@ -123,7 +127,7 @@ public class MethodManager
         if (category == null)
             category = aContext;
 
-        Method.FromSerialized(serializedMethod, category)
+        Method.FromSerialized(myPlugin, serializedMethod)
             .ifPresentOrElse(
                 this::AddMethod,
                 () -> TodoPlugin.IgnorableError("Failed to load method in " + aContext));

@@ -162,6 +162,8 @@ public class TodoPlugin extends Plugin
 
 			SwingUtilities.invokeLater(() -> myClientToolbar.addNavigation(myNavButton));
 		});
+
+		Load();
 	}
 
 	@Override
@@ -296,28 +298,6 @@ public class TodoPlugin extends Plugin
 		myQuest.Load();
 		mySources.RefreshNMZ(this);
 		mySources.RefreshLevels(this);
-
-		if (new File(DATA_FILE).exists())
-		{
-			SwingUtilities.invokeLater(()->
-			{
-				try
-				{
-					FileReader reader = new FileReader(DATA_FILE);
-					JsonObject content = new JsonParser().parse(reader).getAsJsonObject();
-					myPanel.GetGoals().Deserialize(content);
-				}
-				catch (Exception aException)
-				{
-					IgnorableError("Failed to load goals from " + DATA_FILE);
-					IgnorableError(aException);
-				}
-				
-
-
-				myWantsSave = false;
-			});
-		}
 	}
 
 	public void RequestSave()
@@ -343,6 +323,28 @@ public class TodoPlugin extends Plugin
 		catch (IOException exception)
 		{
 			IgnorableError("Failed to save goals to " + DATA_FILE);
+		}
+	}
+
+	private void Load()
+	{
+		if (new File(DATA_FILE).exists())
+		{
+			SwingUtilities.invokeLater(()->
+			{
+				try
+				{
+					FileReader reader = new FileReader(DATA_FILE);
+					JsonObject content = new JsonParser().parse(reader).getAsJsonObject();
+					myPanel.GetGoals().Deserialize(content);
+				}
+				catch (Exception aException)
+				{
+					IgnorableError("Failed to load goals from " + DATA_FILE);
+					IgnorableError(aException);
+				}
+				myWantsSave = false;
+			});
 		}
 	}
 }

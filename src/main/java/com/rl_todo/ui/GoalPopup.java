@@ -110,7 +110,10 @@ public class GoalPopup extends JPopupMenu
         myPlugin.myPanel.SetContent(
                 new JScrollPane(
                         new MethodSelectorPanel(myPlugin, myGoal.GetId())
-                                .OnSelect((method) -> myGoal.SetMethod(method)),
+                                .OnSelect((method) ->  {
+                                    myGoal.SetMethod(method);
+                                    myPlugin.myPanel.ResetContent();
+                                }),
                         ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED));
     }
