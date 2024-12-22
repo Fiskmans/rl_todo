@@ -1,5 +1,6 @@
 package com.rl_todo.serialization;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 
 public class SerializableRecursiveMethod
@@ -15,6 +16,10 @@ public class SerializableRecursiveMethod
     }
 
     public String name;
+
+    @Nullable
+    public String special;
+
     public Float per_craft;
 
     public HashMap<String, SerializableRecursiveMethod> takes;

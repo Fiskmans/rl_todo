@@ -92,8 +92,13 @@ public class Goal implements ProgressTracker
 
             if (childMethod.IsFullMethod())
             {
-                child.SetMethod(Method.FromSerialized(childMethod, child.myId));
-                child.SetChildMethodFromSerialized(childMethod);
+                Method.FromSerialized(myPlugin, childMethod, child.myId).ifPresentOrElse(
+                    (method) ->
+                    {
+                        child.SetMethod(method);
+                        child.SetChildMethodFromSerialized(childMethod);
+                    },
+                    () -> TodoPlugin.IgnorableError("Failed to load a method"));
             }
         }
     }
@@ -106,8 +111,14 @@ public class Goal implements ProgressTracker
 
         if (aSerialized.from != null && aSerialized.from.IsFullMethod())
         {
-            out.SetMethod(Method.FromSerialized(aSerialized.from, out.myId));
-            out.SetChildMethodFromSerialized(aSerialized.from);
+            Method.FromSerialized(aPlugin, aSerialized.from, out.myId).ifPresentOrElse(
+                (method) ->
+                {
+                    out.SetMethod(method);
+                    out.SetChildMethodFromSerialized(aSerialized.from);
+                },
+                () -> TodoPlugin.IgnorableError("Failed to load a method")
+            );
         }
 
         return out;

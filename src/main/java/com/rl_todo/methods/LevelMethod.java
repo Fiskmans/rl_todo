@@ -1,11 +1,17 @@
 package com.rl_todo.methods;
 
+import com.rl_todo.serialization.SerializableMethod;
+import com.rl_todo.serialization.SerializableRecursiveMethod;
 import com.rl_todo.ui.IdBuilder;
 import com.rl_todo.Resource;
 import com.rl_todo.ResourcePool;
 import com.rl_todo.TodoPlugin;
 import net.runelite.api.Client;
 import net.runelite.api.Skill;
+
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.logging.Level;
 
 public class LevelMethod extends Method
 {
@@ -28,7 +34,7 @@ public class LevelMethod extends Method
     String myXpTag;
     String myLevelTag;
 
-    public LevelMethod(Client aClient, Skill aSkill)
+    public LevelMethod(TodoPlugin aPlugin, Skill aSkill)
     {
         super(("Level up " + aSkill.getName()), "level");
 
@@ -37,10 +43,46 @@ public class LevelMethod extends Method
         myMakes.Add(IdBuilder.levelId(aSkill), 1);
         myTakes.Add(IdBuilder.xpId(aSkill), 1);
 
-        myClient = aClient;
+        myClient = aPlugin.myClient;
         mySkill = aSkill;
         myLevelTag = IdBuilder.levelId(aSkill);
         myXpTag = IdBuilder.xpId(aSkill);
+
+        myCategory = "Level up";
+    }
+
+    public static Optional<Method> LevelFromSerialized(TodoPlugin aPlugin, String aId)
+    {
+        if (!aId.startsWith("level."))
+            return Optional.empty();
+
+        try
+        {
+            return Optional.of(new LevelMethod(aPlugin, Skill.valueOf(aId.substring(6))));
+        }
+        catch (IllegalArgumentException e)
+        {
+            return Optional.empty();
+        }
+    }
+
+    public static Optional<Method> LevelFromSerialized(TodoPlugin aPlugin, SerializableMethod aSerialized)
+    {
+        for (String makes : aSerialized.makes.keySet())
+        {
+            if (!makes.startsWith("level."))
+                return Optional.empty();
+
+            try
+            {
+                return Optional.of(new LevelMethod(aPlugin, Skill.valueOf(makes.substring(6))));
+            }
+            catch (IllegalArgumentException e)
+            {
+                return Optional.empty();
+            }
+        }
+        return Optional.empty();
     }
 
     @Override
@@ -75,6 +117,15 @@ public class LevelMethod extends Method
         out.Add(IdBuilder.levelId(mySkill), Math.min(bankedLevel - baseLevel, (int)Math.ceil(aWanted)));
 
         return out;
+    }
+
+    @Override
+    public void SerializeInto(SerializableRecursiveMethod aSparseMethod, String aMainProduct)
+    {
+        aSparseMethod.name = myName;
+
+        aSparseMethod.takes = new HashMap<>();
+        aSparseMethod.takes.put(IdBuilder.xpId(mySkill), new SerializableRecursiveMethod(1.f));
     }
 
 }

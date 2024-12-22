@@ -8,6 +8,9 @@ public class SerializableMethod
     public String name;
 
     @Nullable
+    public String special;
+
+    @Nullable
     public String category;
 
     public HashMap<String, Float> requires;

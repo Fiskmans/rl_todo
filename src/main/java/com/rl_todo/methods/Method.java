@@ -29,10 +29,24 @@ public class Method
     {
         myName = aName;
         myCategory = aCategory;
+
+        if (myCategory == null)
+            myCategory = "/";
     }
 
-    public static Method FromSerialized(SerializableRecursiveMethod aSerialized, String aMainProduct)
+    public static Optional<Method> FromSerialized(TodoPlugin aPlugin, SerializableRecursiveMethod aSerialized, String aMainProduct)
     {
+        if (aSerialized.special != null)
+        {
+            switch (aSerialized.special)
+            {
+                case "level":
+                    return LevelMethod.LevelFromSerialized(aPlugin, aMainProduct);
+            }
+
+            return Optional.empty();
+        }
+
         Method method = new Method(aSerialized.name, "from_saved");
 
         if (aSerialized.requires != null)
@@ -48,10 +62,10 @@ public class Method
 
         method.myMakes.Add(aMainProduct, aSerialized.per_craft);
 
-        return method;
+        return Optional.of(method);
     }
 
-    public static Optional<Method> FromSerialized(SerializableMethod aSerialized, String aCategory)
+    public static Optional<Method> FromSerialized(TodoPlugin aPlugin, SerializableMethod aSerialized)
     {
         if (aSerialized.name == null)
             return Optional.empty();
@@ -59,7 +73,19 @@ public class Method
         if (aSerialized.makes == null)
             return Optional.empty();
 
-        Method out = new Method(aSerialized.name, aCategory);
+
+        if (aSerialized.special != null)
+        {
+            switch (aSerialized.special)
+            {
+                case "level":
+                    return LevelMethod.LevelFromSerialized(aPlugin, aSerialized);
+            }
+
+            return Optional.empty();
+        }
+
+        Method out = new Method(aSerialized.name, aSerialized.category);
 
         aSerialized.makes.forEach((key, value) -> out.myMakes.Add(new Resource(key, value)));
 

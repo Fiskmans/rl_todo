@@ -147,6 +147,7 @@ public class MethodSelectorPanel extends JPanel
             at.AddNode(selector, false);
 
             repaint();
+            revalidate();
         });
     }
 }
