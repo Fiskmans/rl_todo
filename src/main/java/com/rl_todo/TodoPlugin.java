@@ -29,6 +29,8 @@ import net.runelite.client.plugins.achievementdiary.QuestPointRequirement;
 import net.runelite.client.ui.ClientToolbar;
 import net.runelite.client.ui.NavigationButton;
 import net.runelite.client.util.ImageUtil;
+import okhttp3.OkHttpClient;
+
 import static net.runelite.client.RuneLite.RUNELITE_DIR;
 
 import java.awt.*;
@@ -74,6 +76,9 @@ public class TodoPlugin extends Plugin
 	public ChatboxTextInput myChatboxTextInput;
 	@Inject
 	public Gson myGson;
+
+	@Inject
+	public OkHttpClient myHttpClient;
 
 	@Inject
 	@Named("developerMode")
