@@ -22,7 +22,6 @@ import static net.runelite.client.RuneLite.RUNELITE_DIR;
 
 public class MethodManager
 {
-    private static OkHttpClient myHttpClient;
     private static JsonParser myJsonParser;
 
     private TodoPlugin myPlugin;
@@ -35,7 +34,6 @@ public class MethodManager
     {
         myPlugin = aPlugin;
 
-        myHttpClient = new OkHttpClient();
         myJsonParser = new JsonParser();
 
         LoadFromConfig();
@@ -58,7 +56,7 @@ public class MethodManager
         {
             Request req = new Request.Builder().url(aPath).build();
 
-            Call call = myHttpClient.newCall(req);
+            Call call = myPlugin.myHttpClient.newCall(req);
             call.enqueue(new Callback() {
                 @Override
                 public void onFailure(@NonNull Call call, @NonNull IOException e) {
@@ -121,11 +119,6 @@ public class MethodManager
             TodoPlugin.IgnorableError("Failed to load method in " + aContext);
             return;
         }
-
-        String category = serializedMethod.category;
-
-        if (category == null)
-            category = aContext;
 
         Method.FromSerialized(myPlugin, serializedMethod)
             .ifPresentOrElse(
