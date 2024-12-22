@@ -34,6 +34,22 @@ public class Method
             myCategory = "/";
     }
 
+    public Method Copy()
+    {
+        Method out = new Method(myName, myCategory);
+
+        out.myTakes = new ResourcePool();
+        out.myTakes.AddAll(myTakes);
+
+        out.myMakes = new ResourcePool();
+        out.myMakes.AddAll(myMakes);
+
+        out.myRequires = new ResourcePool();
+        out.myRequires.AddAll(myRequires);
+
+        return out;
+    }
+
     public static Optional<Method> FromSerialized(TodoPlugin aPlugin, SerializableRecursiveMethod aSerialized, String aMainProduct)
     {
         if (aSerialized.special != null)

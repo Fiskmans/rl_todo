@@ -41,6 +41,15 @@ public class TreeNode extends JPanel
         //repaint();
     }
 
+
+    public <T extends JComponent & TreeNodeItem> void RemoveNode(T aNode)
+    {
+        if (myBranch == null)
+            return;
+
+        myBranch.RemoveNode(aNode);
+    }
+
     public void RemoveAllNodes()
     {
         if (myBranch != null)

@@ -32,7 +32,24 @@ public class GoalCollectionPanel extends JPanel
     public void AddGoal(Goal aGoal)
     {
         myGoals.add(aGoal);
-        add(new GoalTree(myPlugin, aGoal, () -> myPlugin.RequestSave()));
+
+        GoalTree wrapper = new GoalTree(myPlugin, aGoal, () -> myPlugin.RequestSave());
+
+        add(wrapper);
+
+        aGoal.AddSubscriber(new GoalSubscriber() {
+            @Override
+            public void OnRemove() {
+
+                myGoals.remove(aGoal);
+
+                remove(wrapper);
+                revalidate();
+                repaint();
+
+                myPlugin.RequestSave();
+            }
+        });
 
         revalidate();
         repaint();

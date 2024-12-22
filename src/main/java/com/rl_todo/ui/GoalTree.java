@@ -37,7 +37,21 @@ public class GoalTree extends TreeNode implements GoalSubscriber, TreeNodeItem
 
     @Override
     public void OnSubGoalAdded(Goal aSubGoal) {
-        AddNode(new GoalTree(myPlugin, aSubGoal, myOnModified), true);
+
+        GoalTree wrapper = new GoalTree(myPlugin, aSubGoal, myOnModified);
+        AddNode(wrapper, true);
+
+        aSubGoal.AddSubscriber(new GoalSubscriber() {
+            @Override
+            public void OnRemove() {
+                RemoveNode(wrapper);
+                myOnModified.run();
+
+                revalidate();
+                repaint();
+            }
+        });
+
         myOnModified.run();
     }
 
@@ -53,23 +67,8 @@ public class GoalTree extends TreeNode implements GoalSubscriber, TreeNodeItem
     }
 
     @Override
-    public void OnBankedChanged() {
-
-    }
-
-    @Override
-    public void OnProgressChanged() {
-
-    }
-
-    @Override
     public void OnMethodChanged() {
         myOnModified.run();
-    }
-
-    @Override
-    public void OnCompleted() {
-
     }
 
     @Override
