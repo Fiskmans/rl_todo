@@ -13,6 +13,10 @@ public class ResourcePool {
         return myResources.isEmpty();
     }
 
+    public void Clear() {
+        myResources.clear();
+    }
+
     public void Add(String aId, float aAmount)
     {
         myResources.put(aId, myResources.getOrDefault(aId, 0.f) + aAmount);
@@ -21,6 +25,16 @@ public class ResourcePool {
     public void Add(Resource aResource)
     {
         Add(aResource.myId, aResource.myAmount);
+    }
+
+    public boolean Set(String aId, float aAmount)
+    {
+        if (Math.abs(myResources.getOrDefault(aId, 0.f) - aAmount) < 0.001f)
+            return false;
+
+        myResources.put(aId, aAmount);
+
+        return true;
     }
 
     public void AddAll(Collection<Resource> aCollection)

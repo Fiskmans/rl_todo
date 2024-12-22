@@ -22,9 +22,9 @@ public class ResourceView extends JPanel {
     {
         myAwaitable = new Awaitable();
 
-        setMinimumSize(new Dimension(230, 18));
-        setPreferredSize(new Dimension(230, 18));
-        setMaximumSize(new Dimension(230, 18));
+        setMinimumSize(new Dimension(210, 18));
+        setPreferredSize(new Dimension(210, 18));
+        setMaximumSize(new Dimension(210, 18));
 
         String prefix = "";
 

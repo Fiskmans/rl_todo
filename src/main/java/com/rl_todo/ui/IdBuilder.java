@@ -53,7 +53,23 @@ public class IdBuilder extends JPanel
     }
     public static String questId(Quest aQuest)
     {
-        return "quest." + aQuest.getId();
+        return "quest." + SafeName(aQuest.getName());
+    }
+
+    private static String SafeName(String aRawName)
+    {
+        return aRawName
+                .replace(" ", "_")
+                .replace("(", "")
+                .replace(")", "")
+                .replace("'", "")
+                .replace("/", "-")
+                .replace("_-_", "-")
+                .replace(".","")
+                .replace("&", "and")
+                .replace("#", "__")
+                .replace("?", "_")
+                .toLowerCase();
     }
 
 

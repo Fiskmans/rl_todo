@@ -3,6 +3,7 @@ package com.rl_todo.ui;
 import com.rl_todo.TodoPlugin;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.PluginPanel;
+import net.runelite.client.util.SwingUtil;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -75,9 +76,10 @@ public class TodoPanel extends PluginPanel
 
     public void SetContent(JComponent aPanel)
     {
-        myBackButton.setVisible(true);
-        myContentArea.removeAll();
+        myContentArea.remove(myDefaultContent); // preserve this component from the devastation that is fastRemoveAll
+        SwingUtil.fastRemoveAll(myContentArea);
         myContentArea.add(aPanel, BorderLayout.CENTER);
+        myBackButton.setVisible(true);
         revalidate();
         repaint();
     }

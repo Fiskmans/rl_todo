@@ -46,7 +46,7 @@ public class Utilities {
                     return Optional.empty();
                 }
             case "quest":
-                return Optional.of("Completion of " + part);
+                return Optional.of("Completion of " + TranslateQuestIdToName(aRawId));
             case "xp":
                 return Optional.of(part.substring(0,1).toUpperCase() + part.substring(1).toLowerCase() + " xp");
             case "level":
@@ -99,7 +99,7 @@ public class Utilities {
                     return Optional.empty();
                 }
             case "quest":
-                return Optional.of(part);
+                return Optional.of(TranslateQuestIdToName(aRawId));
             case "xp":
                 return Optional.of("xp");
             case "level":
@@ -127,6 +127,17 @@ public class Utilities {
             default:
                 return Optional.empty();
         }
+    }
+
+    private String TranslateQuestIdToName(String aId)
+    {
+        for (Quest quest : Quest.values())
+        {
+            if (IdBuilder.questId(quest).equals(aId))
+                return quest.getName();
+        }
+
+        return aId.substring(6);
     }
 
     public static String PrettyNumber(int aNumber)
@@ -181,8 +192,7 @@ public class Utilities {
                     int itemId = Integer.parseInt(part);
 
                     ItemComposition itemComposition = myPlugin.myItemManager.getItemComposition(itemId);
-                    AsyncBufferedImage icon = myPlugin.myItemManager.getImage(itemId, aStackSize, itemComposition.isStackable());
-                    return icon; // TODO: allow some way to subscribe to onloaded for repaints
+                    return myPlugin.myItemManager.getImage(itemId, aStackSize, itemComposition.isStackable());
                 }
                 catch (final NumberFormatException ignored)
                 {

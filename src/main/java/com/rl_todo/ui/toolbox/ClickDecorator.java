@@ -12,7 +12,7 @@ public class ClickDecorator<T extends JComponent> extends JPanel
     public T myInner;
     Consumer<T> myConsumer;
 
-    ClickDecorator(T aInner, Consumer<T> aConsumer)
+    public ClickDecorator(T aInner, Consumer<T> aConsumer)
     {
         setLayout(new BorderLayout());
         add(aInner, BorderLayout.CENTER);

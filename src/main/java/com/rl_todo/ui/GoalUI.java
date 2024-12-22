@@ -48,7 +48,6 @@ public class GoalUI extends JPanel implements GoalSubscriber {
         addMouseListener(new MouseListener() {
             @Override
             public void mouseClicked(MouseEvent e) {
-
             }
 
             @Override
@@ -89,6 +88,7 @@ public class GoalUI extends JPanel implements GoalSubscriber {
 
     @Override
     public void OnSubGoalsCleared() {
+        revalidate();
     }
 
     @Override

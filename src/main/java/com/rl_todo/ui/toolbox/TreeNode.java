@@ -13,6 +13,14 @@ public class TreeNode extends JPanel
     {
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
+        if (aContent != null)
+            SetContent(aContent);
+    }
+
+    public void SetContent(JComponent aContent)
+    {
+        assert myContent == null;
+
         aContent.setAlignmentX(RIGHT_ALIGNMENT);
 
         add(aContent);

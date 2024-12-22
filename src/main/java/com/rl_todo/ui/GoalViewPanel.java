@@ -1,8 +1,10 @@
 package com.rl_todo.ui;
 
 import com.rl_todo.TodoPlugin;
+import com.rl_todo.ui.toolbox.SelectionBox;
 import com.rl_todo.ui.toolbox.Stretchable;
 import net.runelite.api.ItemID;
+import net.runelite.client.util.SwingUtil;
 
 import javax.swing.*;
 import java.awt.*;
@@ -48,7 +50,7 @@ public class GoalViewPanel extends JPanel
 
         add(buttonPanel);
 
-        JPanel statusPanel = new JPanel();
+        SelectionBox statusPanel = new SelectionBox(this::OnStatusSelectionChanged);
         statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
 
         myPlugin.myClientThread.invokeLater(() ->
@@ -61,11 +63,11 @@ public class GoalViewPanel extends JPanel
 
             SwingUtilities.invokeLater(() ->
             {
-                statusPanel.add(new ProgressSourceStatusIcon(myPlugin, myPlugin.mySources.Inventory,  inventoryIcon));
-                statusPanel.add(new ProgressSourceStatusIcon(myPlugin, myPlugin.mySources.Bank, bankIcon));
-                statusPanel.add(new ProgressSourceStatusIcon(myPlugin, myPlugin.mySources.Levels, levelsIcon));
-                statusPanel.add(new ProgressSourceStatusIcon(myPlugin, myPlugin.mySources.SeedVault, seedVaultIcon));
-                statusPanel.add(new ProgressSourceStatusIcon(myPlugin, myPlugin.mySources.Quests, questIcon));
+                statusPanel.AddSelectable(new ProgressSourceStatusIcon(myPlugin, myPlugin.mySources.Inventory,  inventoryIcon, "Inventory"));
+                statusPanel.AddSelectable(new ProgressSourceStatusIcon(myPlugin, myPlugin.mySources.Bank, bankIcon, "Bank"));
+                statusPanel.AddSelectable(new ProgressSourceStatusIcon(myPlugin, myPlugin.mySources.Levels, levelsIcon, "Levels"));
+                statusPanel.AddSelectable(new ProgressSourceStatusIcon(myPlugin, myPlugin.mySources.SeedVault, seedVaultIcon, "Seed vault"));
+                statusPanel.AddSelectable(new ProgressSourceStatusIcon(myPlugin, myPlugin.mySources.Quests, questIcon, "Quests"));
 
                 revalidate();
                 repaint();
@@ -85,9 +87,41 @@ public class GoalViewPanel extends JPanel
         SetView(myGoals);
     }
 
+    private void OnStatusSelectionChanged(JComponent aStatusSelection)
+    {
+        assert aStatusSelection instanceof ProgressSourceStatusIcon;
+
+        ProgressSourceStatusIcon prog = (ProgressSourceStatusIcon)aStatusSelection;
+
+        JPanel view = new JPanel();
+        view.setLayout(new BoxLayout(view, BoxLayout.PAGE_AXIS));
+
+        JButton back = new JButton("Back");
+        back.addActionListener(e -> {
+            SetView(myGoals);
+            prog.SetSelected(false);
+        });
+
+        ResourcePoolView resourceView = new ResourcePoolView(myPlugin, prog.mySource.All(), prog.myName);
+
+        JPanel alignementFix = new JPanel();
+        alignementFix.add(back, BorderLayout.WEST);
+
+        view.add(alignementFix);
+        view.add(new JSeparator());
+
+        JPanel alignmentFix2 = new JPanel();
+        alignmentFix2.add(resourceView);
+
+        view.add(alignmentFix2);
+
+        resourceView.Await().WhenDone((sender) -> SwingUtilities.invokeLater(() -> SetView(view)));
+    }
+
     private void SetView(JComponent aComponent)
     {
-        myViewed.removeAll();
+        myViewed.remove(myGoals); // preserve this component from the devastation that is fastRemoveAll
+        SwingUtil.fastRemoveAll(myViewed);
         myViewed.add(aComponent, BorderLayout.NORTH);
         revalidate();
         repaint();
