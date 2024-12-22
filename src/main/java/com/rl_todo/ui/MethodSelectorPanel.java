@@ -6,6 +6,7 @@ import com.rl_todo.ui.toolbox.Category;
 import com.rl_todo.ui.toolbox.ClickableText;
 
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -20,6 +21,7 @@ public class MethodSelectorPanel extends JPanel
     JPanel myInnerPanel = new JPanel();
     MethodViewer myViewer;
     boolean myIsPinned = false;
+    boolean myStartExpanded;
 
 
     Consumer<Method> myOnSelected;
@@ -29,6 +31,7 @@ public class MethodSelectorPanel extends JPanel
     MethodSelectorPanel(TodoPlugin aPlugin, String aFilterByProduct)
     {
         myPlugin = aPlugin;
+        myStartExpanded = aFilterByProduct != null;
 
         if (aFilterByProduct != null)
         {
@@ -57,10 +60,7 @@ public class MethodSelectorPanel extends JPanel
         myInnerPanel.setLayout(new BoxLayout(myInnerPanel, BoxLayout.PAGE_AXIS));
 
         JScrollPane scrollPane = new JScrollPane(myInnerPanel, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setAlignmentY(TOP_ALIGNMENT);
-        scrollPane.setAlignmentX(LEFT_ALIGNMENT);
-
-        setBackground(Color.RED);
+        scrollPane.setBorder(new LineBorder(Color.DARK_GRAY, 1));
 
         setMinimumSize(new Dimension(220, 40));
         setPreferredSize(new Dimension(220, 40));
@@ -109,7 +109,7 @@ public class MethodSelectorPanel extends JPanel
                     continue;
                 }
 
-                at = at.GetOrCreateChild(key);
+                at = at.GetOrCreateChild(key, myStartExpanded);
             }
 
             ClickableText selector = new ClickableText(myPlugin, aMethod.myName, (text) ->
@@ -144,7 +144,7 @@ public class MethodSelectorPanel extends JPanel
                 public void mouseExited(MouseEvent e) {}
             });
 
-            at.AddNode(selector, false);
+            at.AddNode(selector, myStartExpanded);
 
             repaint();
             revalidate();

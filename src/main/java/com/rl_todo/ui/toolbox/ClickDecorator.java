@@ -22,7 +22,7 @@ public class ClickDecorator<T extends JComponent> extends JPanel
 
         MouseAdapter adapter = new MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void mousePressed(MouseEvent e) {
 
                 if (e.getButton() != 1)
                     return;

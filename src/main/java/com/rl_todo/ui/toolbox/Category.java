@@ -2,6 +2,7 @@ package com.rl_todo.ui.toolbox;
 
 import com.rl_todo.TodoPlugin;
 
+import java.awt.*;
 import java.util.HashMap;
 
 public class Category extends TreeNode implements TreeNodeItem
@@ -20,7 +21,7 @@ public class Category extends TreeNode implements TreeNodeItem
         myText = aText;
     }
 
-    public Category GetOrCreateChild(String aKey)
+    public Category GetOrCreateChild(String aKey, boolean aStartVisible)
     {
         if (myChildren.containsKey(aKey))
             return myChildren.get(aKey);
@@ -29,7 +30,7 @@ public class Category extends TreeNode implements TreeNodeItem
         myChildren.put(aKey, created);
 
         created.setAlignmentX(RIGHT_ALIGNMENT);
-        AddNode(created, false);
+        AddNode(created, aStartVisible);
 
         return created;
     }

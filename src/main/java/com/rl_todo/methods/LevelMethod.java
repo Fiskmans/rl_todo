@@ -58,7 +58,7 @@ public class LevelMethod extends Method
 
         try
         {
-            return Optional.of(new LevelMethod(aPlugin, Skill.valueOf(aId.substring(6))));
+            return Optional.of(new LevelMethod(aPlugin, Skill.valueOf(aId.substring(6).toUpperCase())));
         }
         catch (IllegalArgumentException e)
         {
@@ -123,6 +123,8 @@ public class LevelMethod extends Method
     public void SerializeInto(SerializableRecursiveMethod aSparseMethod, String aMainProduct)
     {
         aSparseMethod.name = myName;
+
+        aSparseMethod.special = "level";
 
         aSparseMethod.takes = new HashMap<>();
         aSparseMethod.takes.put(IdBuilder.xpId(mySkill), new SerializableRecursiveMethod(1.f));
