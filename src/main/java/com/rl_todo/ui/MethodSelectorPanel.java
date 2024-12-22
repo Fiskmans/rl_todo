@@ -77,16 +77,13 @@ public class MethodSelectorPanel extends JPanel
 
     void AddOption(Method aMethod)
     {
-        List<String> parts = Arrays.stream(aMethod.myCategory.split("[/\\\\]")).filter((s) -> !s.equals("")).collect(Collectors.toList());
-
-        if (parts.isEmpty())
-        {
-            //TODO: put them in the root? 'uncategorised'? idk, figure it out
-            return;
-        }
-
         SwingUtilities.invokeLater(() ->
         {
+            List<String> parts = Arrays.stream(aMethod.myCategory.split("[/\\\\]")).filter((s) -> !s.equals("")).collect(Collectors.toList());
+
+            if (parts.isEmpty())
+                parts.add("Uncategorized");
+
             Category at = null;
 
             for (String key : parts)
