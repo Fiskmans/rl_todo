@@ -19,9 +19,9 @@ public class ItemIdBuilder extends JPanel
 
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
 
-        JButton inGameSearch = new JButton("Search in game");
+        JButton inGameSearch = new JButton("Use in game search");
         inGameSearch.addActionListener(e -> myPlugin.myChatboxItemSearch
-                .tooltipText("Select Goal")
+                .tooltipText("Select Item")
                 .onItemSelected((aItemId) -> myConsumer.accept(IdBuilder.itemId(aItemId)))
                 .build());
 
