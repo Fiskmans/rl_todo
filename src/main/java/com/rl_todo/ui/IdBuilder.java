@@ -23,6 +23,8 @@ import static net.runelite.api.SpriteID.TAB_QUESTS;
 
 public class IdBuilder extends JPanel
 {
+    public static final String QUEST_POINTS = "progression.quest_points";
+
     public static Resource xpResource(Skill aSkill, double aAmount) { return new Resource(xpId(aSkill), (float)aAmount); }
     public static Resource levelResource(Skill aSkill, int aAmount) { return new Resource(levelId(aSkill), aAmount); }
     public static Resource itemResource(Item aItem, double aAmount) { return new Resource(itemId(aItem), (float)aAmount); }
