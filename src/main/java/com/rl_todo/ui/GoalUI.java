@@ -83,10 +83,6 @@ public class GoalUI extends JPanel implements GoalSubscriber {
     }
 
     @Override
-    public void OnSubGoalAdded(Goal aSubGoal) {
-    }
-
-    @Override
     public void OnSubGoalsCleared() {
         revalidate();
     }
@@ -107,34 +103,16 @@ public class GoalUI extends JPanel implements GoalSubscriber {
     }
 
     @Override
-    public void OnMethodChanged() {
-
-    }
-
-    @Override
     public void OnCompleted() {
         repaint();
     }
 
     @Override
     protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
 
-        int width = getWidth();
+        g.setColor(getBackground());
+        g.drawRect(0,0,getWidth(),getHeight());
 
-        //if (width <= 60)
-        //    PaintCompact(g);
-        //else
-            PaintNormal(g);
-    }
-
-    void PaintCompact(Graphics g)
-    {
-        // TODO: draw a compact rotation progressbar
-    }
-
-    void PaintNormal(Graphics g)
-    {
         g.setColor(Utilities.BlendColors(Color.DARK_GRAY, Color.WHITE, myIsHovered ? 0.2f : 0.0f));
         g.fillRect(0, 0, getWidth(), getHeight());
 

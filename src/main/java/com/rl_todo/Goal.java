@@ -22,7 +22,7 @@ public class Goal implements ProgressTracker
 
     private Method myMethod;
 
-    private int myTarget = 1;
+    private int myTarget;
     private int myProgress = 0;
     private int myBanked = 0;
     public int GetTarget() { return  myTarget; }
@@ -64,6 +64,11 @@ public class Goal implements ProgressTracker
         myMethod = null;
 
         Setup();
+    }
+
+    public void Remove()
+    {
+        mySubscribers.forEach(GoalSubscriber::OnRemove);
     }
 
     private void SetChildMethodFromSerialized(SerializableRecursiveMethod aSerializedMethod)
@@ -236,7 +241,7 @@ public class Goal implements ProgressTracker
     {
         UnsetMethod();
 
-        myMethod = aMethod;
+        myMethod = aMethod.Copy();
 
         myMethod.CalculateNeeded(myPlugin, myId, myTarget)
                 .All()
@@ -246,32 +251,16 @@ public class Goal implements ProgressTracker
 
         mySubscribers.forEach(GoalSubscriber::OnMethodChanged);
 
-        //TODO reimplement
-    }
-
-    private void AddSubGoal(Goal aGoal)
-    {
-        myChildren.add(aGoal);
-
-        mySubscribers.forEach((subscriber) -> subscriber.OnSubGoalAdded(aGoal));
+        myPlugin.RequestSave();
     }
 
     private void AddSubGoal(String aId, int aTarget)
     {
-        List<GoalSubscriber> subscribers = new ArrayList<>();
+        Goal subGoal = new Goal(myPlugin, aId, aTarget, false, null);
 
-        subscribers.add(new GoalSubscriber() {
+        subGoal.AddSubscriber(new GoalSubscriber() {
             @Override
             public void OnSubGoalAdded(Goal aSubGoal) {}
-
-            @Override
-            public void OnSubGoalsCleared() {}
-
-            @Override
-            public void OnTargetChanged() {}
-
-            @Override
-            public void OnBankedChanged() {}
 
             @Override
             public void OnProgressChanged() {
@@ -279,13 +268,22 @@ public class Goal implements ProgressTracker
             }
 
             @Override
-            public void OnMethodChanged() {}
+            public void OnRemove() {
+                if (myMethod != null)
+                {
+                    myMethod.myTakes.Remove(subGoal.GetId());
+                    myMethod.myRequires.Remove(subGoal.GetId());
+                }
 
-            @Override
-            public void OnCompleted() {}
+                myChildren.remove(subGoal);
+
+                myPlugin.RequestSave();
+            }
         });
 
-        AddSubGoal(new Goal(myPlugin, aId, aTarget, false, subscribers));
+        myChildren.add(subGoal);
+
+        mySubscribers.forEach((sub) -> sub.OnSubGoalAdded(subGoal));
     }
 
     @Override

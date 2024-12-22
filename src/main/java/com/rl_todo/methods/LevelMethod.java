@@ -29,7 +29,7 @@ public class LevelMethod extends Method
             /*80*/  1986068,    2192818,    2421087,    2673114,    2951373,    3258594,    3597792,    3972294,    4385776,    4842295,
             /*90*/  5346332,    5902831,    6517253,    7195629,    7944614,    8771558,    9684577,    10692629,   11805606,   13034431};
 
-    Client myClient;
+    TodoPlugin myPlugin;
     Skill mySkill;
     String myXpTag;
     String myLevelTag;
@@ -43,12 +43,18 @@ public class LevelMethod extends Method
         myMakes.Add(IdBuilder.levelId(aSkill), 1);
         myTakes.Add(IdBuilder.xpId(aSkill), 1);
 
-        myClient = aPlugin.myClient;
+        myPlugin = aPlugin;
         mySkill = aSkill;
         myLevelTag = IdBuilder.levelId(aSkill);
         myXpTag = IdBuilder.xpId(aSkill);
 
         myCategory = "Level up";
+    }
+
+    @Override
+    public Method Copy()
+    {
+        return new LevelMethod(myPlugin, mySkill);
     }
 
     public static Optional<Method> LevelFromSerialized(TodoPlugin aPlugin, String aId)
@@ -101,7 +107,7 @@ public class LevelMethod extends Method
     @Override
     public ResourcePool CalculateAvailable(ResourcePool aAvailableResources, String aId, float aWanted)
     {
-        int baseLevel = myClient.getRealSkillLevel(mySkill);
+        int baseLevel = myPlugin.myClient.getRealSkillLevel(mySkill);
 
         int bankedXp = (int)Math.floor(aAvailableResources.GetSpecific(IdBuilder.xpId(mySkill)));
 

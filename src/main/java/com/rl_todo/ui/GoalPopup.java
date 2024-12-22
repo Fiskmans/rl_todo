@@ -71,8 +71,7 @@ public class GoalPopup extends JPopupMenu
         if (myGoal.CanSetTarget())
             add(setAmount);
 
-        if (myGoal.IsRoot())
-            add(deleteGoal);
+        add(deleteGoal);
     }
 
     void SetAmount()
@@ -120,7 +119,7 @@ public class GoalPopup extends JPopupMenu
 
     void Delete()
     {
-        myPlugin.myClientThread.invokeLater(() -> myPlugin.myPanel.GetGoals().RemoveGoal(myGoal));
+        myPlugin.myClientThread.invokeLater(() -> myGoal.Remove());
     }
 
     void Unset()

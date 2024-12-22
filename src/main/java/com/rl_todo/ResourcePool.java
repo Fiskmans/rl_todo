@@ -27,6 +27,11 @@ public class ResourcePool {
         Add(aResource.myId, aResource.myAmount);
     }
 
+    public void Remove(String aId)
+    {
+        myResources.remove(aId);
+    }
+
     public boolean Set(String aId, float aAmount)
     {
         if (Math.abs(myResources.getOrDefault(aId, 0.f) - aAmount) < 0.001f)
